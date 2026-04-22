@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BILL-O-MATIC — Package Manager</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --navy:       #1a2744;
+  --navy-light: #243459;
+  --navy-mid:   #2d3f6e;
+  --blue:       #4a7fd4;
+  --blue-soft:  #dce8ff;
+  --green:      #27ae60;
+  --green-soft: #d4f5e5;
+  --red:        #c0392b;
+  --red-soft:   #fde8e6;
+  --yellow:     #e67e22;
+  --yellow-soft:#fff3cd;
+  --purple:     #6c3fc5;
+  --purple-soft:#ede8ff;
+  --gray-100:   #f4f6fb;
+  --gray-200:   #e4e9f2;
+  --gray-300:   #c8d0e0;
+  --gray-500:   #8494b0;
+  --gray-700:   #3d4f6e;
+  --text:       #1c2740;
+  --white:      #ffffff;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'IBM Plex Sans', sans-serif; background: #c8d4e8; color: var(--text); font-size: 13px; min-height: 100vh; }
+
+/* TOP BAR */
+.topbar {
+  background: var(--navy);
+  color: #fff;
+  height: 40px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px; font-weight: 600;
+}
+.topbar-right { font-size: 11px; font-weight: 400; opacity: 0.7; }
+
+/* TABS */
+.tabs { background: #b0bed8; display: flex; gap: 2px; padding: 6px 10px 0; border-bottom: 2px solid var(--navy-mid); }
+.tab {
+  background: #8fa0bf; color: #2a3a5a;
+  border: none; padding: 7px 20px; cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif; font-size: 12px; font-weight: 500;
+  border-radius: 4px 4px 0 0; transition: background 0.15s;
+  display: flex; align-items: center; gap: 6px;
+}
+.tab.active { background: var(--gray-100); color: var(--navy); font-weight: 700; }
+.tab-badge {
+  background: var(--blue); color: #fff;
+  border-radius: 3px; padding: 1px 6px;
+  font-size: 10px; font-family: 'IBM Plex Mono', monospace;
+}
+
+/* PANEL */
+.panel { background: var(--gray-100); min-height: calc(100vh - 82px); display: none; }
+.panel.active { display: block; }
+
+/* INFO BAR */
+.infobar {
+  background: #dce8f8; border-bottom: 1px solid #b8cfea;
+  padding: 7px 16px; display: flex; align-items: center; justify-content: space-between;
+  font-size: 12px;
+}
+.infobar strong { color: var(--navy); }
+.infobar a { color: var(--red); text-decoration: none; font-size: 11px; }
+
+/* TOOLBAR */
+.toolbar {
+  padding: 10px 14px; display: flex; align-items: center; gap: 8px;
+  background: #eaf0f8; border-bottom: 1px solid var(--gray-200);
+}
+.search-input {
+  border: 1px solid var(--gray-300); border-radius: 3px;
+  padding: 5px 10px; font-size: 12px; width: 220px;
+  font-family: 'IBM Plex Sans', sans-serif; background: #fff;
+}
+.search-input:focus { outline: 2px solid var(--blue); }
+
+/* BUTTONS */
+.btn {
+  border: none; border-radius: 3px; padding: 5px 12px;
+  font-size: 12px; font-family: 'IBM Plex Sans', sans-serif; font-weight: 600;
+  cursor: pointer; transition: filter 0.15s, transform 0.1s;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn:active { transform: scale(0.98); }
+.btn-blue    { background: var(--blue);   color: #fff; }
+.btn-green   { background: var(--green);  color: #fff; }
+.btn-red     { background: var(--red);    color: #fff; font-size: 11px; padding: 4px 8px; }
+.btn-edit    { background: var(--blue);   color: #fff; font-size: 11px; padding: 4px 8px; }
+.btn-gray    { background: var(--gray-300); color: var(--text); }
+.btn-purple  { background: var(--purple); color: #fff; font-size: 11px; padding: 4px 8px; }
+.btn-navy    { background: var(--navy);   color: #fff; font-size: 11px; padding: 4px 8px; }
+.btn-sm      { padding: 3px 8px; font-size: 11px; }
+
+/* PACKAGE CARD */
+.pkg-card {
+  margin: 12px 14px;
+  border: 1px solid var(--gray-300);
+  border-radius: 6px;
+  background: var(--white);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+  overflow: hidden;
+}
+.pkg-card.sub-pkg {
+  margin: 0 0 0 32px;
+  border-color: var(--blue);
+  border-left: 3px solid var(--blue);
+}
+.pkg-card.sub-pkg-2 {
+  margin: 0 0 0 64px;
+  border-left: 3px solid var(--purple);
+}
+
+.pkg-header {
+  background: var(--navy);
+  color: #fff;
+  padding: 9px 14px;
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer; user-select: none;
+}
+.pkg-header.sub { background: var(--navy-mid); }
+.pkg-header.sub2 { background: var(--purple); }
+
+.pkg-code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px; font-weight: 600;
+  background: rgba(255,255,255,0.15);
+  padding: 2px 8px; border-radius: 3px;
+  white-space: nowrap;
+}
+.pkg-name { font-size: 13px; font-weight: 500; flex: 1; }
+.pkg-amount {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px; opacity: 0.85;
+  white-space: nowrap;
+}
+.pkg-flags { display: flex; gap: 5px; flex-wrap: wrap; }
+.pkg-actions { display: flex; gap: 5px; margin-left: auto; }
+.collapse-btn {
+  background: rgba(255,255,255,0.15); border: none; color: #fff;
+  width: 22px; height: 22px; border-radius: 3px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; flex-shrink: 0; transition: transform 0.2s;
+}
+.collapse-btn.open { transform: rotate(90deg); }
+
+/* ITEMS TABLE inside card */
+.items-table { width: 100%; border-collapse: collapse; }
+.items-table thead tr { background: #2d4070; color: #c8d8f0; }
+.items-table thead th {
+  padding: 6px 10px; text-align: left;
+  font-size: 10px; font-weight: 700;
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.5px; white-space: nowrap;
+  border-right: 1px solid #3a5080;
+}
+.items-table tbody tr { border-bottom: 1px solid var(--gray-200); }
+.items-table tbody tr:hover { background: #f0f5ff; }
+.items-table tbody tr.choose-one-row { background: #f8f4ff; }
+.items-table tbody tr.choose-one-row:hover { background: #ede8ff; }
+.items-table tbody td {
+  padding: 7px 10px; font-size: 12px; vertical-align: middle; white-space: nowrap;
+}
+
+/* choose-one group indicator */
+.choose-one-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--purple-soft); color: var(--purple);
+  font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 3px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.choose-one-bracket {
+  display: flex; align-items: center; gap: 6px;
+}
+.co-line {
+  width: 2px; background: var(--purple); align-self: stretch; border-radius: 2px;
+}
+
+/* pills */
+.pill { display: inline-block; border-radius: 3px; padding: 2px 7px; font-size: 11px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; }
+.pill-yes  { background: var(--green-soft);  color: var(--green); }
+.pill-no   { background: var(--red-soft);    color: var(--red); }
+.pill-blank{ background: var(--gray-200);    color: var(--gray-500); }
+
+/* add item row */
+.add-item-row { padding: 8px 12px; background: var(--gray-100); border-top: 1px solid var(--gray-200); }
+
+/* sub-packages section */
+.sub-pkgs-section { border-top: 2px dashed var(--blue); padding: 10px 12px; background: #f5f8ff; }
+.sub-pkgs-label {
+  font-size: 10px; font-weight: 700; color: var(--blue);
+  text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* MODAL */
+.modal-backdrop {
+  display: none; position: fixed; inset: 0;
+  background: rgba(10,20,45,0.6); z-index: 100;
+  align-items: center; justify-content: center;
+}
+.modal-backdrop.open { display: flex; }
+.modal {
+  background: #fff; border-radius: 6px;
+  box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+  width: 580px; max-width: 95vw; max-height: 90vh;
+  display: flex; flex-direction: column; overflow: hidden;
+  animation: modalIn 0.18s ease;
+}
+@keyframes modalIn {
+  from { transform: translateY(-16px) scale(0.97); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+.modal-header {
+  background: var(--navy); color: #fff;
+  padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600;
+}
+.modal-close { background: none; border: none; color: #fff; cursor: pointer; font-size: 18px; }
+.modal-body  { padding: 18px; overflow-y: auto; flex: 1; }
+.modal-footer { padding: 12px 18px; border-top: 1px solid var(--gray-200); display: flex; justify-content: flex-end; gap: 8px; }
+
+/* form */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 18px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group.full { grid-column: 1/-1; }
+.form-group label { font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.5px; }
+.form-group select,
+.form-group input[type=text],
+.form-group input[type=number] {
+  border: 1px solid var(--gray-300); border-radius: 3px;
+  padding: 7px 10px; font-size: 12px;
+  font-family: 'IBM Plex Sans', sans-serif; background: #fff;
+}
+.form-group select:focus, .form-group input:focus { outline: 2px solid var(--blue); }
+
+.section-label {
+  font-size: 11px; font-weight: 700; color: var(--navy-mid);
+  text-transform: uppercase; letter-spacing: 0.7px;
+  margin: 16px 0 8px; padding-bottom: 4px;
+  border-bottom: 2px solid var(--gray-200);
+}
+.flags-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.flag-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 10px; background: var(--gray-100); border-radius: 4px;
+  font-size: 12px; font-weight: 500;
+}
+.toggle { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0; background: var(--gray-300);
+  border-radius: 10px; cursor: pointer; transition: background 0.2s;
+}
+.toggle-slider::after {
+  content: ''; position: absolute;
+  left: 3px; top: 3px; width: 14px; height: 14px;
+  background: #fff; border-radius: 50%; transition: transform 0.2s;
+}
+.toggle input:checked + .toggle-slider { background: var(--blue); }
+.toggle input:checked + .toggle-slider::after { transform: translateX(16px); }
+
+/* choose-one group builder */
+.co-group-list { display: flex; flex-direction: column; gap: 4px; }
+.co-group-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px; background: var(--purple-soft);
+  border-radius: 4px; font-size: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.co-group-item .remove { cursor: pointer; color: var(--red); font-size: 14px; margin-left: auto; }
+
+/* sub-pkg selector */
+.sub-pkg-list { display: flex; flex-direction: column; gap: 4px; }
+.sub-pkg-opt {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; background: var(--blue-soft);
+  border-radius: 4px; cursor: pointer; transition: background 0.1s;
+}
+.sub-pkg-opt:hover { background: #c8dcff; }
+.sub-pkg-opt label { cursor: pointer; font-size: 12px; }
+.sub-pkg-opt code { font-family: 'IBM Plex Mono', monospace; font-weight: 600; }
+
+/* toast */
+.toast {
+  position: fixed; bottom: 20px; right: 20px;
+  background: var(--navy); color: #fff;
+  padding: 10px 16px; border-radius: 4px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  z-index: 200; transform: translateY(60px); opacity: 0;
+  transition: all 0.22s ease;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+.empty-msg { padding: 32px; text-align: center; color: var(--gray-500); font-size: 13px; }
+.stype-btn {
+  border: 1px solid var(--gray-300); border-radius: 3px; padding: 4px 12px;
+  font-size: 11px; font-family: "IBM Plex Sans", sans-serif; font-weight: 600;
+  cursor: pointer; background: #fff; color: var(--gray-700); transition: all 0.15s;
+}
+.stype-btn:hover { background: var(--blue-soft); border-color: var(--blue); color: var(--navy); }
+.stype-btn.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+.stype-group-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 14px; margin: 4px 0 0;
+  background: linear-gradient(90deg, #e0e8f8 0%, #f4f6fb 100%);
+  border-top: 2px solid var(--blue); border-bottom: 1px solid #c8d4e8;
+  font-size: 11px; font-weight: 700; color: var(--navy-mid);
+  text-transform: uppercase; letter-spacing: 0.8px;
+}
+.stype-group-header .stype-count {
+  background: var(--blue); color: #fff;
+  border-radius: 3px; padding: 1px 7px;
+  font-size: 10px; font-family: "IBM Plex Mono", monospace;
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span style="font-size:16px">⊙</span> BILL-O-MATIC — Package Manager
+  </div>
+  <div class="topbar-right">ATT DIA — IP Circuit Packages</div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('packages')">
+    Packages <span class="tab-badge" id="pkg-count">1</span>
+  </button>
+  <button class="tab" onclick="switchTab('choosone')">Choose-One Options</button>
+</div>
+
+<!-- ══════════ PACKAGES TAB ══════════ -->
+<div class="panel active" id="tab-packages">
+  <div class="infobar">
+    <div>Showing: <strong id="infobar-label">All Packages</strong></div>
+    <a href="#" onclick="event.preventDefault()">✕ Clear filter</a>
+  </div>
+  <div class="toolbar">
+    <input class="search-input" type="text" placeholder="Search by code or name…" oninput="filterView(this.value)">
+    <button class="btn btn-green" onclick="openAddPkgModal(null)">＋ Add Package</button>
+  </div>
+  <div id="service-type-filters" style="display:flex;gap:6px;padding:8px 14px;background:#e8eef8;border-bottom:1px solid #ccd6e8;flex-wrap:wrap;align-items:center;">
+    <span style="font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin-right:4px;">Filter:</span>
+    <button class="stype-btn active" onclick="setServiceFilter(null,this)">All</button>
+  </div>
+  <div id="packages-container"></div>
+</div>
+
+<!-- ══════════ CHOOSE-ONE TAB ══════════ -->
+<div class="panel" id="tab-choosone">
+  <div class="infobar"><div><strong>Choose-One Option Groups</strong></div></div>
+  <div id="choosone-container" style="padding:14px;"></div>
+</div>
+
+<!-- ══════════ ADD/EDIT PACKAGE MODAL ══════════ -->
+<div class="modal-backdrop" id="modal-pkg">
+  <div class="modal">
+    <div class="modal-header">
+      <span id="modal-pkg-title">Add Package</span>
+      <button class="modal-close" onclick="closeModal('modal-pkg')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Item Code (Package ID)</label>
+          <input type="text" id="f-code" placeholder="e.g. IPCT2M009A">
+        </div>
+        <div class="form-group">
+          <label>Item Name</label>
+          <input type="text" id="f-name" placeholder="e.g. IP Circuit">
+        </div>
+        <div class="form-group">
+          <label>Amount ($)</label>
+          <input type="number" id="f-amount" value="0" min="0" step="0.01">
+        </div>
+        <div class="form-group">
+          <label>Billing Override</label>
+          <select id="f-billovr">
+            <option value="No">No</option>
+            <option value="Yes">Yes</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Service Type <span style="font-weight:400;color:var(--gray-500)">(pulled from item code attribute in production)</span></label>
+          <div style="display:flex;gap:6px;">
+            <select id="f-servicetype" style="flex:1">
+              <option value="">— Unassigned —</option>
+            </select>
+            <input type="text" id="f-servicetype-new" placeholder="Add new type…" style="width:160px">
+            <button type="button" class="btn btn-navy btn-sm" onclick="addServiceType()">Add</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Flags</div>
+      <div class="flags-grid">
+        <div class="flag-row"><span>Required</span><label class="toggle"><input type="checkbox" id="f-required"><span class="toggle-slider"></span></label></div>
+        <div class="flag-row"><span>Choose One</span><label class="toggle"><input type="checkbox" id="f-chooseone"><span class="toggle-slider"></span></label></div>
+        <div class="flag-row"><span>Quote Required</span><label class="toggle"><input type="checkbox" id="f-quotereq"><span class="toggle-slider"></span></label></div>
+        <div class="flag-row"><span>Delivery Required</span><label class="toggle"><input type="checkbox" id="f-delivreq"><span class="toggle-slider"></span></label></div>
+      </div>
+
+      <div class="section-label">Attach Sub-Packages</div>
+      <p style="font-size:11px;color:var(--gray-500);margin-bottom:8px;">Nest other packages inside this one. Per-item overrides can be set after saving via the ⚙ Overrides button.</p>
+      <div class="sub-pkg-list" id="sub-pkg-list"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-gray" onclick="closeModal('modal-pkg')">Cancel</button>
+      <button class="btn btn-blue" onclick="savePkg()">Save Package</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ ADD/EDIT ITEM MODAL ══════════ -->
+<div class="modal-backdrop" id="modal-item">
+  <div class="modal">
+    <div class="modal-header">
+      <span id="modal-item-title">Add Item</span>
+      <button class="modal-close" onclick="closeModal('modal-item')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Item Code</label>
+          <input type="text" id="fi-code" placeholder="e.g. IPCAC2M">
+        </div>
+        <div class="form-group">
+          <label>Item Name</label>
+          <input type="text" id="fi-name" placeholder="e.g. IP Coordinated Access Charge">
+        </div>
+        <div class="form-group">
+          <label>Amount ($)</label>
+          <input type="number" id="fi-amount" value="0" min="0" step="0.01">
+        </div>
+        <div class="form-group">
+          <label>Billing Override</label>
+          <select id="fi-billovr">
+            <option value="No">No</option>
+            <option value="Yes">Yes</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label>Choose-One Group (leave blank if not part of a group)</label>
+          <input type="text" id="fi-cogroup" placeholder="e.g. IP Address Type">
+        </div>
+        <div class="form-group">
+          <label>Min Qty</label>
+          <input type="number" id="fi-minqty" value="1" min="0">
+        </div>
+        <div class="form-group">
+          <label>Max Qty</label>
+          <input type="number" id="fi-maxqty" value="1" min="0">
+        </div>
+      </div>
+      <div id="qty-auto-hint" style="display:none;font-size:11px;color:#4a5a9a;background:#eef4ff;border:1px solid #b0c8e8;border-radius:3px;padding:6px 10px;margin-bottom:6px;"></div>
+      <div style="background:#f0f5ff;border:1px solid #b0c8e8;border-radius:4px;padding:10px 14px;font-size:11px;color:#2a3a5a;margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+        <div style="background:#fff;border:1px solid #d0ddf0;border-radius:3px;padding:8px 10px;">
+          <div style="font-family:monospace;font-weight:700;font-size:13px;color:#1a2744;margin-bottom:4px;">Min 1 / Max 1</div>
+          <div style="color:#4a5a7a;">Item is <strong>always ordered once</strong>. No quantity input shown to the user.</div>
+          <div style="margin-top:4px;font-size:10px;color:#8494b0;">e.g. IP Coordinated Access Charge</div>
+        </div>
+        <div style="background:#fff;border:1px solid #d0ddf0;border-radius:3px;padding:8px 10px;">
+          <div style="font-family:monospace;font-weight:700;font-size:13px;color:#7a5500;margin-bottom:4px;">Min 0 / Max N</div>
+          <div style="color:#4a5a7a;"><strong>Optional.</strong> User enters how many they need, from 0 up to N. Not required to order any.</div>
+          <div style="margin-top:4px;font-size:10px;color:#8494b0;">e.g. SFP modules — set Max to port count</div>
+        </div>
+        <div style="background:#fff;border:1px solid #d0ddf0;border-radius:3px;padding:8px 10px;">
+          <div style="font-family:monospace;font-weight:700;font-size:13px;color:#1a5a9a;margin-bottom:4px;">Min 1 / Max N</div>
+          <div style="color:#4a5a7a;"><strong>Required, variable.</strong> User must order at least 1, up to N.</div>
+          <div style="margin-top:4px;font-size:10px;color:#8494b0;">e.g. IP addresses — at least one required</div>
+        </div>
+      </div>
+      <div class="section-label">Flags</div>
+      <div class="flags-grid">
+        <div class="flag-row"><span>Required</span><label class="toggle"><input type="checkbox" id="fi-required" onchange="syncQtyFromFlags()"><span class="toggle-slider"></span></label></div>
+        <div class="flag-row"><span>Choose One</span><label class="toggle"><input type="checkbox" id="fi-chooseone" onchange="syncQtyFromFlags()"><span class="toggle-slider"></span></label></div>
+        <div class="flag-row"><span>Quote Required</span><label class="toggle"><input type="checkbox" id="fi-quotereq"><span class="toggle-slider"></span></label></div>
+        <div class="flag-row"><span>Delivery Required</span><label class="toggle"><input type="checkbox" id="fi-delivreq"><span class="toggle-slider"></span></label></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-gray" onclick="closeModal('modal-item')">Cancel</button>
+      <button class="btn btn-blue" onclick="saveItem()">Save Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ OVERRIDES MODAL ══════════ -->
+<div class="modal-backdrop" id="modal-overrides">
+  <div class="modal" style="width:760px;max-width:97vw">
+    <div class="modal-header" style="background:var(--purple)">
+      <div>
+        <div id="modal-overrides-title" style="font-size:13px;font-weight:700"></div>
+        <div style="font-size:10px;font-weight:400;opacity:0.8;margin-top:2px">Items shown in <em>italics</em> are deactivated in this parent context only — the sub-package itself is unchanged.</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-overrides')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:0;overflow-y:auto;max-height:65vh">
+      <div id="overrides-list"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-gray" onclick="closeModal('modal-overrides')">Cancel</button>
+      <button class="btn btn-blue" onclick="saveOverrides()">Save Overrides</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════
+let editPkgId   = null;
+let editItemId  = null;
+let editItemPkgId = null;
+let overridePkgId = null;
+
+const packages = [
+  {
+    id: 'pkg1',
+    code: 'IPCT2M009A',
+    serviceType: 'Internet Access',
+    name: 'IP Circuit',
+    amount: 0,
+    billingOverride: 'No',
+    required: false, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: ['pkg2'],
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: [
+      { id:'i1', code:'IPCAC2M',  name:'IP Coordinated Access Charge', amount:75, billingOverride:'No', required:true,  chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'i2', code:'RTR2M',    name:'Router',                        amount:0,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'i3', code:'IPADRES30',name:'Static IP Address',             amount:0,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'IP Address Type', minQty:1, maxQty:1 },
+      { id:'i4', code:'IPADRES29',name:'Static IP Address',             amount:0,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'IP Address Type', minQty:1, maxQty:1 },
+      { id:'i5', code:'IPADDDHCP',name:'DHCP IP Address',               amount:0,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'IP Address Type', minQty:1, maxQty:1 },
+    ]
+  },
+  {
+    id: 'pkg2',
+    code: 'JEX230012R',
+    serviceType: 'Edge Router',
+    name: 'JUNIPER EX2300-C-12T - RENTAL',
+    amount: 0,
+    billingOverride: 'No',
+    required: false, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: [],
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: [
+      { id:'j1', code:'J2300MISTR', name:'JUNIPER EX2300 12T CLOUD SUBSCRIPTION 3YR', amount:0, billingOverride:'No', required:true,  chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'j2', code:'DLSMSPFR',   name:'SFP SINGLE MODE DELL - RENTAL',              amount:0, billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'j3', code:'J10GSFPER',  name:'SFP JUNIPER 10G ETHERNET - RENTAL',          amount:0, billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'j4', code:'JEXSPF10R',  name:'JUNIPER EX-SFP-10GE-LRM',                   amount:0, billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'j5', code:'SFPJUNMMFR', name:'SFP JUNIPER MMF',                            amount:0, billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'j6', code:'J23RKMNTR',  name:'JUNIPER EX2300 RACK MOUNT',                 amount:0, billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'j7', code:'IPADRES30',  name:'Static IP Address',                          amount:0, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'IP Address Type', minQty:1, maxQty:1 },
+      { id:'j8', code:'IPADRES29',  name:'Static IP Address',                          amount:0, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'IP Address Type', minQty:1, maxQty:1 },
+      { id:'j9', code:'IPADDDHCP',  name:'DHCP IP Address',                            amount:0, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'IP Address Type', minQty:1, maxQty:1 },
+    ]
+  },
+  {
+    id: 'pkg3',
+    code: 'IPCT2M009B',
+    serviceType: 'Internet Access',
+    name: 'IP Circuit - 009B',
+    amount: 0,
+    billingOverride: 'No',
+    required: false, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: ['pkg2'],
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: [
+      { id:'b1', code:'IPCAC2M',  name:'IP Coordinated Access Charge', amount:75, billingOverride:'No', required:true,  chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'b2', code:'RTR2M',    name:'Router',                        amount:0,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'b3', code:'IPADRES30',name:'Static IP Address',             amount:0,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'IP Address Type', minQty:1, maxQty:1 },
+      { id:'b4', code:'IPADRES29',name:'Static IP Address',             amount:0,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'IP Address Type', minQty:1, maxQty:1 },
+      { id:'b5', code:'IPADDDHCP',name:'DHCP IP Address',               amount:0,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'IP Address Type', minQty:1, maxQty:1 },
+    ]
+  }
+];;
+
+// ═══════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════
+
+
+let serviceTypes = ['Internet Access', 'Edge Router'];
+let activeServiceFilter = null;
+
+function addServiceType() {
+  const inp = document.getElementById('f-servicetype-new');
+  const val = inp.value.trim();
+  if (!val || serviceTypes.includes(val)) { inp.value=''; return; }
+  serviceTypes.push(val);
+  inp.value = '';
+  populateServiceTypeSelect(val);
+  renderServiceTypeFilters();
+}
+
+function populateServiceTypeSelect(selectedVal) {
+  const sel = document.getElementById('f-servicetype');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— Unassigned —</option>' +
+    serviceTypes.map(t => '<option value="'+t+'"'+(t===selectedVal?' selected':'')+'>'+t+'</option>').join('');
+}
+
+function setServiceFilter(type, btn) {
+  activeServiceFilter = type;
+  document.querySelectorAll('.stype-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderPackages();
+}
+
+function renderServiceTypeFilters() {
+  const bar = document.getElementById('service-type-filters');
+  if (!bar) return;
+  // Collect types actually in use
+  const used = [...new Set(packages.map(p => p.serviceType).filter(Boolean))];
+  bar.innerHTML = '<span style="font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin-right:4px;">Filter:</span>' +
+    '<button class="stype-btn'+(activeServiceFilter===null?' active':'')+'" onclick="setServiceFilter(null,this)">All</button>' +
+    used.map(t => '<button class="stype-btn'+(activeServiceFilter===t?' active':'')+'" data-stype="'+t+'" onclick="setServiceFilter(this.dataset.stype,this)">'+t+'</button>').join('');
+}
+
+function getParentPkgs(pkgId) {
+  return packages.filter(p => p.subPackageIds.includes(pkgId));
+}
+
+function getPkg(id) { return packages.find(p => p.id === id); }
+function uid()      { return 'x' + Math.random().toString(36).slice(2,9); }
+function pill(val, yes='Yes', no='No') {
+  if (val === null || val === '' || val === undefined) return `<span class="pill pill-blank">—</span>`;
+  return val ? `<span class="pill pill-yes">${yes}</span>` : `<span class="pill pill-no">${no}</span>`;
+}
+function fmt(amt) { return amt > 0 ? '$' + parseFloat(amt).toFixed(2) : '—'; }
+
+function allSubItems(pkgId) {
+  const p = getPkg(pkgId); if (!p) return [];
+  let its = (p.items || []).map(i => ({ ...i, fromPkgId: pkgId, fromPkgCode: p.code }));
+  p.subPackageIds.forEach(sid => its = its.concat(allSubItems(sid)));
+  return its;
+}
+
+function isAncestor(ancestorId, checkId) {
+  const a = getPkg(ancestorId); if (!a) return false;
+  for (const sid of a.subPackageIds) {
+    if (sid === checkId || isAncestor(sid, checkId)) return true;
+  }
+  return false;
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════
+function renderAll(filter='') {
+  renderPackages(filter);
+  renderChooseOne();
+  document.getElementById('pkg-count').textContent = packages.length;
+}
+
+function renderPackages(filter='') {
+  const container = document.getElementById('packages-container');
+  container.innerHTML = '';
+  renderServiceTypeFilters();
+
+  let visible = packages.slice();
+  if (filter) visible = visible.filter(p => p.code.toLowerCase().includes(filter) || p.name.toLowerCase().includes(filter));
+  if (activeServiceFilter) visible = visible.filter(p => p.serviceType === activeServiceFilter);
+
+  if (!visible.length) {
+    container.innerHTML = '<div class="empty-msg">No packages match this filter.</div>';
+    return;
+  }
+
+  // Group by service type
+  const groups = {};
+  const unassigned = [];
+  visible.forEach(p => {
+    const t = p.serviceType || '';
+    if (!t) { unassigned.push(p); return; }
+    if (!groups[t]) groups[t] = [];
+    groups[t].push(p);
+  });
+
+  const allTypes = [...Object.keys(groups).sort(), ...(unassigned.length ? [''] : [])];
+  allTypes.forEach(type => {
+    const pkgs = type ? groups[type] : unassigned;
+    if (!pkgs || !pkgs.length) return;
+    // Group header
+    const hdr = document.createElement('div');
+    hdr.className = 'stype-group-header';
+    hdr.innerHTML = (type || 'Unassigned') + '<span class="stype-count">' + pkgs.length + '</span>';
+    container.appendChild(hdr);
+    pkgs.forEach(p => container.appendChild(buildPkgCard(p, 0)));
+  });
+}
+
+function buildPkgCard(p, depth) {
+  const wrap = document.createElement('div');
+  wrap.className = `pkg-card${depth===1?' sub-pkg':depth>=2?' sub-pkg-2':''}`;
+  wrap.id = `card-${p.id}`;
+
+  const hasChildren = p.subPackageIds.length > 0;
+  const hClass = depth === 0 ? '' : depth === 1 ? ' sub' : ' sub2';
+
+  wrap.innerHTML = `
+    <div class="pkg-header${hClass}" onclick="toggleCard('${p.id}')">
+      <button class="collapse-btn${p.collapsed?'':' open'}" onclick="event.stopPropagation();toggleCard('${p.id}')" title="Collapse/expand">▶</button>
+      <span class="pkg-code">${p.code}</span>
+      <span class="pkg-name">${p.name}</span>
+      <span class="pkg-amount">${fmt(p.amount)}</span>
+      ${(function(){
+        const parents = getParentPkgs(p.id);
+        if (!parents.length) return '';
+        return '<span style="font-size:10px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:3px;padding:2px 8px;white-space:nowrap;">⊂ used in: ' + parents.map(pp=>pp.code).join(', ') + '</span>';
+      })()}
+      <div class="pkg-flags">
+        ${p.required   ? `<span class="pill pill-yes" style="font-size:10px">Req</span>`   : ''}
+        ${p.chooseOne  ? `<span class="pill pill-yes" style="font-size:10px">ChOne</span>` : ''}
+        ${p.quoteReq   ? `<span class="pill pill-yes" style="font-size:10px">QuoteReq</span>` : ''}
+        ${p.deliveryReq? `<span class="pill pill-yes" style="font-size:10px">DelivReq</span>`: ''}
+      </div>
+      <div class="pkg-actions" onclick="event.stopPropagation()">
+        ${hasChildren ? `<button class="btn btn-purple btn-sm" onclick="openOverridesModal('${p.id}')">⚙ Overrides</button>` : ''}
+        <button class="btn btn-edit btn-sm" onclick="openEditPkgModal('${p.id}')">Edit</button>
+        <button class="btn btn-navy btn-sm" onclick="openAddSubPkgModal('${p.id}')">＋ Sub</button>
+        <button class="btn btn-red btn-sm" onclick="deletePkg('${p.id}')">Del</button>
+      </div>
+    </div>
+    <div id="body-${p.id}" style="${p.collapsed?'display:none':''}">
+      ${buildItemsTable(p)}
+      <div class="add-item-row">
+        <button class="btn btn-green btn-sm" onclick="openAddItemModal('${p.id}')">＋ Add Item</button>
+      </div>
+      ${p.subPackageIds.length ? buildSubPkgsSection(p) : ''}
+    </div>
+  `;
+
+  return wrap;
+}
+
+function buildQtyCell(it) {
+  const mn = it.minQty !== undefined ? it.minQty : 1;
+  const mx = it.maxQty !== undefined ? it.maxQty : 1;
+  const mono = 'font-family:monospace;font-size:11px;';
+  if (mn === 1 && mx === 1) {
+    return '<span style="' + mono + 'color:var(--gray-500)">1 / 1</span>';
+  }
+  const badge = mn === 0
+    ? '<span style="' + mono + 'background:#fff8e8;color:#7a5500;border:1px solid #f0d080;padding:2px 7px;border-radius:3px;">' + mn + ' – ' + mx + '</span>'
+    : '<span style="' + mono + 'background:#e8f5ff;color:#1a5a9a;border:1px solid #90c8f0;padding:2px 7px;border-radius:3px;">' + mn + ' – ' + mx + '</span>';
+  return badge;
+}
+
+function buildItemsTable(p) {
+  const items = p.items || [];
+
+  // The package code is always the first required line item (the anchor/core item)
+  const billovr = p.billingOverride !== 'No'
+    ? '<span class="pill pill-yes">' + p.billingOverride + '</span>'
+    : '<span class="pill pill-no">No</span>';
+  const anchorRow = `
+    <tr style="background:#dce8ff;border-bottom:2px solid #9ab8e8;">
+      <td><span style="font-size:9px;font-family:'IBM Plex Mono',monospace;background:var(--navy);color:#fff;padding:2px 6px;border-radius:2px;letter-spacing:0.3px">PKG ITEM</span></td>
+      <td style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--navy)">${p.code}</td>
+      <td style="font-weight:600">${p.name}</td>
+      <td style="font-family:'IBM Plex Mono',monospace;font-weight:600">${fmt(p.amount)}</td>
+      <td><span style="font-family:monospace;font-size:11px;color:var(--gray-700)">1 / 1</span></td>
+      <td><span class="pill pill-yes">Yes</span></td>
+      <td>${pill(p.chooseOne)}</td>
+      <td>${pill(p.quoteReq)}</td>
+      <td>${pill(p.deliveryReq)}</td>
+      <td>${billovr}</td>
+      <td><button class="btn btn-edit btn-sm" onclick="openEditPkgModal('${p.id}')">Edit</button></td>
+    </tr>`;
+
+  // Build sub-item rows
+  let rows = '';
+  let i = 0;
+  while (i < items.length) {
+    const it = items[i];
+    if (it.chooseOne && it.coGroup) {
+      const group = items.filter(x => x.coGroup === it.coGroup);
+      const groupStart = items.indexOf(group[0]);
+      if (i === groupStart) {
+        rows += group.map((gi, gi_idx) => {
+          const giBillovr = gi.billingOverride !== 'No'
+            ? '<span class="pill pill-yes">' + gi.billingOverride + '</span>'
+            : '<span class="pill pill-no">No</span>';
+          return `
+          <tr class="choose-one-row" data-pkg="${p.id}" data-item="${gi.id}">
+            <td>
+              <div class="choose-one-bracket">
+                <div class="co-line" style="${gi_idx===0?'border-top-left-radius:2px;':gi_idx===group.length-1?'border-bottom-left-radius:2px;':''}"></div>
+                ${gi_idx===0 ? '<span class="choose-one-badge">&#x2299; ' + gi.coGroup + '</span>' : '<span style="width:80px;display:inline-block"></span>'}
+              </div>
+            </td>
+            <td style="font-family:'IBM Plex Mono',monospace;font-weight:600">${gi.code}</td>
+            <td>${gi.name}</td>
+            <td>${fmt(gi.amount)}</td>
+            <td>${buildQtyCell(gi)}</td>
+            <td>${pill(gi.required)}</td>
+            <td>${pill(gi.chooseOne)}</td>
+            <td>${pill(gi.quoteReq)}</td>
+            <td>${pill(gi.deliveryReq)}</td>
+            <td>${giBillovr}</td>
+            <td>
+              <div style="display:flex;gap:4px">
+                <button class="btn btn-edit btn-sm" onclick="openEditItemModal('${p.id}','${gi.id}')">Edit</button>
+                <button class="btn btn-red btn-sm" onclick="deleteItem('${p.id}','${gi.id}')">Del</button>
+              </div>
+            </td>
+          </tr>`;
+        }).join('');
+        i += group.length;
+        continue;
+      }
+    }
+    const itBillovr = it.billingOverride !== 'No'
+      ? '<span class="pill pill-yes">' + it.billingOverride + '</span>'
+      : '<span class="pill pill-no">No</span>';
+    rows += `
+      <tr data-pkg="${p.id}" data-item="${it.id}">
+        <td></td>
+        <td style="font-family:'IBM Plex Mono',monospace;font-weight:600">${it.code}</td>
+        <td>${it.name}</td>
+        <td>${fmt(it.amount)}</td>
+        <td>${buildQtyCell(it)}</td>
+        <td>${pill(it.required)}</td>
+        <td>${pill(it.chooseOne)}</td>
+        <td>${pill(it.quoteReq)}</td>
+        <td>${pill(it.deliveryReq)}</td>
+        <td>${itBillovr}</td>
+        <td>
+          <div style="display:flex;gap:4px">
+            <button class="btn btn-edit btn-sm" onclick="openEditItemModal('${p.id}','${it.id}')">Edit</button>
+            <button class="btn btn-red btn-sm" onclick="deleteItem('${p.id}','${it.id}')">Del</button>
+          </div>
+        </td>
+      </tr>`;
+    i++;
+  }
+
+  return `
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th>Group</th><th>Item Code</th><th>Item Name</th><th>Amount</th>
+          <th>Qty (Min/Max)</th><th>Required</th><th>Choose One</th>
+          <th>Quote Req</th><th>Delivery Req</th><th>Bill Override</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>${anchorRow}${rows}</tbody>
+    </table>
+  `;
+}
+
+function buildSubPkgsSection(p) {
+  let html = '<div class="sub-pkgs-section"><div class="sub-pkgs-label">⊙ Nested Sub-Packages (' + p.subPackageIds.length + ')</div>';
+  p.subPackageIds.forEach(sid => {
+    const sub = getPkg(sid);
+    if (!sub) return;
+    const subItems = allSubItems(sid);
+    const deactivated = subItems.filter(it => {
+      const ov = ((p.overrides || {})[it.fromPkgId] || {})[it.code] || {};
+      return ov.hidden;
+    });
+    const subCard = buildPkgCard(sub, 1);
+    // Inject deactivated banner into the card if needed
+    if (deactivated.length) {
+      const div = document.createElement('div');
+      div.innerHTML = subCard.outerHTML;
+      const hdr = div.querySelector('.pkg-header');
+      if (hdr) {
+        const banner = document.createElement('div');
+        banner.style.cssText = 'background:#fff0f0;border-top:1px solid #f0c0c0;padding:5px 14px;font-size:11px;color:var(--red);display:flex;align-items:center;gap:6px;';
+        banner.innerHTML = '<span style="font-weight:700;">⊘ ' + deactivated.length + ' item' + (deactivated.length>1?'s':'') + ' deactivated in this context:</span> '
+          + deactivated.map(it => '<span style="font-family:monospace;background:#fde8e6;padding:1px 5px;border-radius:2px;text-decoration:line-through;">' + it.code + '</span>').join(' ');
+        div.firstChild.insertBefore(banner, div.querySelector('[id^="body-"]'));
+        html += div.innerHTML;
+        return;
+      }
+      html += subCard.outerHTML;
+    } else {
+      html += subCard.outerHTML;
+    }
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderChooseOne() {
+  const container = document.getElementById('choosone-container');
+  const groups = {};
+  packages.forEach(p => {
+    (p.items || []).forEach(it => {
+      if (it.chooseOne && it.coGroup) {
+        if (!groups[it.coGroup]) groups[it.coGroup] = [];
+        groups[it.coGroup].push({ ...it, pkgCode: p.code, pkgName: p.name });
+      }
+    });
+  });
+  const keys = Object.keys(groups);
+  if (!keys.length) { container.innerHTML = '<div class="empty-msg">No Choose-One groups defined yet.</div>'; return; }
+  container.innerHTML = keys.map(g => `
+    <div style="margin-bottom:16px;border:1px solid var(--purple);border-radius:6px;overflow:hidden">
+      <div style="background:var(--purple);color:#fff;padding:8px 14px;font-weight:700;font-family:'IBM Plex Mono',monospace;font-size:12px;">
+        ⊙ ${g}
+      </div>
+      <table class="items-table" style="background:#fff">
+        <thead><tr>
+          <th>Package</th><th>Item Code</th><th>Item Name</th><th>Amount</th><th>Required</th>
+        </tr></thead>
+        <tbody>
+          ${groups[g].map(it => `
+            <tr style="background:var(--purple-soft)">
+              <td style="font-size:11px;color:var(--gray-500)">${it.pkgCode}</td>
+              <td style="font-family:'IBM Plex Mono',monospace;font-weight:600">${it.code}</td>
+              <td>${it.name}</td>
+              <td>${fmt(it.amount)}</td>
+              <td>${pill(it.required)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// TOGGLE COLLAPSE
+// ═══════════════════════════════════════════════════
+function toggleCard(id) {
+  const p = getPkg(id);
+  if (!p) return;
+  p.collapsed = !p.collapsed;
+  renderAll();
+}
+
+// ═══════════════════════════════════════════════════
+// PACKAGE MODAL
+// ═══════════════════════════════════════════════════
+function fillPkgForm(p) {
+  populateServiceTypeSelect(p ? p.serviceType : '');
+  document.getElementById('f-code').value     = p ? p.code : '';
+  document.getElementById('f-name').value     = p ? p.name : '';
+  document.getElementById('f-amount').value   = p ? p.amount : 0;
+  document.getElementById('f-billovr').value  = p ? p.billingOverride : 'No';
+  document.getElementById('f-required').checked  = p ? p.required  : false;
+  document.getElementById('f-chooseone').checked = p ? p.chooseOne : false;
+  document.getElementById('f-quotereq').checked  = p ? p.quoteReq  : false;
+  document.getElementById('f-delivreq').checked  = p ? p.deliveryReq : false;
+}
+
+function renderSubPkgList(excludeId, currentSubs) {
+  const list = document.getElementById('sub-pkg-list');
+  const candidates = packages.filter(p => p.id !== excludeId && !isAncestor(excludeId || '', p.id));
+  if (!candidates.length) { list.innerHTML = '<div style="font-size:11px;color:var(--gray-500)">No other packages available to nest.</div>'; return; }
+  list.innerHTML = candidates.map(p => `
+    <div class="sub-pkg-opt">
+      <input type="checkbox" id="sub-${p.id}" value="${p.id}" ${currentSubs && currentSubs.includes(p.id) ? 'checked' : ''}>
+      <label for="sub-${p.id}"><code>${p.code}</code> — ${p.name}</label>
+    </div>
+  `).join('');
+}
+
+function openAddPkgModal(parentId) {
+  editPkgId = null;
+  document.getElementById('modal-pkg-title').textContent = 'Add Package';
+  fillPkgForm(null);
+  renderSubPkgList(null, []);
+  openModal('modal-pkg');
+}
+
+function openEditPkgModal(id) {
+  editPkgId = id;
+  const p = getPkg(id);
+  document.getElementById('modal-pkg-title').textContent = `Edit Package: ${p.code}`;
+  fillPkgForm(p);
+  renderSubPkgList(id, p.subPackageIds);
+  openModal('modal-pkg');
+}
+
+function openAddSubPkgModal(parentId) {
+  // open edit on parent to manage sub-packages
+  openEditPkgModal(parentId);
+}
+
+function savePkg() {
+  const code = document.getElementById('f-code').value.trim();
+  const name = document.getElementById('f-name').value.trim();
+  if (!code || !name) { showToast('⚠ Code and name are required.'); return; }
+  const subs = [...document.querySelectorAll('#sub-pkg-list input[type=checkbox]:checked')].map(c => c.value);
+
+  if (editPkgId) {
+    const p = getPkg(editPkgId);
+    p.code = code; p.name = name;
+    p.amount         = parseFloat(document.getElementById('f-amount').value) || 0;
+    p.billingOverride= document.getElementById('f-billovr').value;
+    p.serviceType    = document.getElementById('f-servicetype').value;
+    p.required       = document.getElementById('f-required').checked;
+    p.chooseOne      = document.getElementById('f-chooseone').checked;
+    p.quoteReq       = document.getElementById('f-quotereq').checked;
+    p.deliveryReq    = document.getElementById('f-delivreq').checked;
+    // update sub-pkg parent links
+    p.subPackageIds.forEach(sid => { const s = getPkg(sid); if(s) s.parentId = null; });
+    p.subPackageIds  = subs;
+    subs.forEach(sid => { const s = getPkg(sid); if(s) s.parentId = editPkgId; });
+    showToast('✓ Package updated.');
+  } else {
+    const id = uid();
+    packages.push({
+      id, code, name,
+      amount: parseFloat(document.getElementById('f-amount').value) || 0,
+      billingOverride: document.getElementById('f-billovr').value,
+      serviceType: document.getElementById('f-servicetype').value,
+      required:    document.getElementById('f-required').checked,
+      chooseOne:   document.getElementById('f-chooseone').checked,
+      quoteReq:    document.getElementById('f-quotereq').checked,
+      deliveryReq: document.getElementById('f-delivreq').checked,
+      subPackageIds: subs,
+      overrides: {}, collapsed: false, parentId: null, items: []
+    });
+    subs.forEach(sid => { const s = getPkg(sid); if(s) s.parentId = id; });
+    showToast('✓ Package added.');
+  }
+  closeModal('modal-pkg');
+  renderAll();
+}
+
+function deletePkg(id) {
+  if (!confirm('Delete this package and all its items?')) return;
+  const idx = packages.findIndex(p => p.id === id);
+  if (idx > -1) packages.splice(idx, 1);
+  packages.forEach(p => { p.subPackageIds = p.subPackageIds.filter(s => s !== id); });
+  showToast('✓ Package deleted.');
+  renderAll();
+}
+
+// ═══════════════════════════════════════════════════
+// ITEM MODAL
+// ═══════════════════════════════════════════════════
+function openAddItemModal(pkgId) {
+  editItemId = null; editItemPkgId = pkgId;
+  const p = getPkg(pkgId);
+  document.getElementById('modal-item-title').textContent = `Add Item to: ${p.code}`;
+  document.getElementById('fi-code').value    = '';
+  document.getElementById('fi-name').value    = '';
+  document.getElementById('fi-amount').value  = 0;
+  document.getElementById('fi-billovr').value = 'No';
+  document.getElementById('fi-cogroup').value = '';
+  document.getElementById('fi-minqty').value = 1;
+  document.getElementById('fi-maxqty').value = 1;
+  document.getElementById('fi-minqty').disabled = false;
+  document.getElementById('fi-maxqty').disabled = false;
+  const qh = document.getElementById('qty-auto-hint'); if(qh) qh.style.display='none';
+  ['required','chooseone','quotereq','delivreq'].forEach(f => {
+    document.getElementById(`fi-${f}`).checked = false;
+  });
+  openModal('modal-item');
+}
+
+function openEditItemModal(pkgId, itemId) {
+  editItemPkgId = pkgId; editItemId = itemId;
+  const p = getPkg(pkgId);
+  const it = p.items.find(i => i.id === itemId);
+  document.getElementById('modal-item-title').textContent = `Edit Item: ${it.code}`;
+  document.getElementById('fi-code').value    = it.code;
+  document.getElementById('fi-name').value    = it.name;
+  document.getElementById('fi-amount').value  = it.amount;
+  document.getElementById('fi-billovr').value = it.billingOverride;
+  document.getElementById('fi-cogroup').value = it.coGroup || '';
+  document.getElementById('fi-minqty').value = it.minQty !== undefined ? it.minQty : 1;
+  document.getElementById('fi-maxqty').value = it.maxQty !== undefined ? it.maxQty : 1;
+  document.getElementById('fi-minqty').disabled = it.chooseOne || false;
+  document.getElementById('fi-maxqty').disabled = it.chooseOne || false;
+  const qh2 = document.getElementById('qty-auto-hint'); if(qh2) qh2.style.display='none';
+  document.getElementById('fi-required').checked   = it.required;
+  document.getElementById('fi-chooseone').checked  = it.chooseOne;
+  document.getElementById('fi-quotereq').checked   = it.quoteReq;
+  document.getElementById('fi-delivreq').checked   = it.deliveryReq;
+  openModal('modal-item');
+}
+
+function saveItem() {
+  const code = document.getElementById('fi-code').value.trim();
+  const name = document.getElementById('fi-name').value.trim();
+  if (!code || !name) { showToast('⚠ Code and name are required.'); return; }
+  const p = getPkg(editItemPkgId);
+  const data = {
+    code, name,
+    amount:          parseFloat(document.getElementById('fi-amount').value) || 0,
+    billingOverride: document.getElementById('fi-billovr').value,
+    coGroup:         document.getElementById('fi-cogroup').value.trim(),
+    minQty:          parseInt(document.getElementById('fi-minqty').value) || 0,
+    maxQty:          parseInt(document.getElementById('fi-maxqty').value) || 1,
+    required:    document.getElementById('fi-required').checked,
+    chooseOne:   document.getElementById('fi-chooseone').checked,
+    quoteReq:    document.getElementById('fi-quotereq').checked,
+    deliveryReq: document.getElementById('fi-delivreq').checked,
+  };
+  if (editItemId) {
+    const idx = p.items.findIndex(i => i.id === editItemId);
+    p.items[idx] = { ...p.items[idx], ...data };
+    showToast('✓ Item updated.');
+  } else {
+    p.items.push({ id: uid(), ...data });
+    showToast('✓ Item added.');
+  }
+  closeModal('modal-item');
+  renderAll();
+}
+
+function deleteItem(pkgId, itemId) {
+  const p = getPkg(pkgId);
+  p.items = p.items.filter(i => i.id !== itemId);
+  showToast('✓ Item deleted.');
+  renderAll();
+}
+
+// ═══════════════════════════════════════════════════
+// OVERRIDES MODAL
+// ═══════════════════════════════════════════════════
+function openOverridesModal(pkgId) {
+  overridePkgId = pkgId;
+  const p = getPkg(pkgId);
+  document.getElementById('modal-overrides-title').textContent = 'Overrides for: ' + p.code + ' — ' + p.name;
+  const list = document.getElementById('overrides-list');
+  if (!p.overrides) p.overrides = {};
+
+  // Group items by sub-package
+  let html = '';
+  p.subPackageIds.forEach(sid => {
+    const sub = getPkg(sid);
+    if (!sub) return;
+    const subItems = allSubItems(sid); // includes the anchor item + all nested items
+
+    const deactivatedCount = subItems.filter(it => {
+      const ov = (p.overrides[it.fromPkgId] || {})[it.code] || {};
+      return ov.hidden;
+    }).length;
+
+    html += '<div style="border-bottom:3px solid var(--purple);margin-bottom:0;">';
+    // Sub-package header
+    html += '<div style="background:#f0ebff;padding:9px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #d8cff0;">'
+          + '<span style="font-family:monospace;font-weight:700;font-size:12px;background:var(--purple);color:#fff;padding:2px 8px;border-radius:3px;">' + sub.code + '</span>'
+          + '<span style="font-size:12px;font-weight:600;color:var(--navy)">' + sub.name + '</span>'
+          + '<span style="margin-left:auto;font-size:11px;color:' + (deactivatedCount ? 'var(--red)' : 'var(--gray-500)') + ';">'
+          + (deactivatedCount ? deactivatedCount + ' item' + (deactivatedCount>1?'s':'') + ' deactivated' : 'All items active') + '</span>'
+          + '<button class="btn btn-sm" style="background:#e8e0ff;color:var(--purple);font-size:10px;padding:3px 8px;" data-sid="' + sid + '" data-pkgid="' + pkgId + '" onclick="toggleAllItems(this.dataset.sid,this.dataset.pkgid,true)">Deactivate All</button>'
+          + '<button class="btn btn-sm" style="background:#d4f5e5;color:var(--green);font-size:10px;padding:3px 8px;" data-sid="' + sid + '" data-pkgid="' + pkgId + '" onclick="toggleAllItems(this.dataset.sid,this.dataset.pkgid,false)">Activate All</button>'
+          + '</div>';
+
+    // Column headers
+    html += '<div style="display:grid;grid-template-columns:32px 1fr 110px 80px 80px 80px 80px;gap:0;'
+          + 'padding:5px 14px;font-size:10px;font-weight:700;color:var(--gray-500);'
+          + 'text-transform:uppercase;letter-spacing:0.5px;background:#f8f6ff;border-bottom:1px solid #e0d8f8;">'
+          + '<div></div><div>Item</div><div style="text-align:center">Status</div>'
+          + '<div style="text-align:center">Price ($)</div><div style="text-align:center">Req</div>'
+          + '<div style="text-align:center">Quote Req</div><div style="text-align:center">Deliv Req</div></div>';
+
+    // Items — anchor item first, then the rest
+    const anchorItem = { id: sub.id+'_anchor', code: sub.code, name: sub.name, fromPkgId: sid, fromPkgCode: sub.code, isAnchor: true };
+    const allItems = [anchorItem, ...subItems];
+
+    allItems.forEach(it => {
+      const subOv = (p.overrides[it.fromPkgId] || {});
+      const ov = it.isAnchor ? (p.overrides[sid] && p.overrides[sid]['__anchor'] ? p.overrides[sid]['__anchor'] : {}) : (subOv[it.code] || {});
+      const hidden = ov.hidden || false;
+      const dataCode = it.isAnchor ? '__anchor' : it.code;
+
+      // Locked = Required AND not Choose One (anchor item is always locked)
+      const isLocked = it.isAnchor || (it.required === true && it.chooseOne !== true);
+
+      html += '<div style="display:grid;grid-template-columns:32px 1fr 110px 80px 80px 80px 80px;gap:0;align-items:center;'
+            + 'padding:8px 14px;border-bottom:1px solid #ede8ff;'
+            + 'background:' + (hidden ? '#fff0f0' : (isLocked ? '#f7f8fa' : (it.isAnchor ? '#f3f0ff' : '#fff'))) + ';'
+            + 'opacity:' + (hidden ? 0.6 : 1) + ';" id="ovrow-' + it.id + '">';
+
+      // Active/deactivated indicator dot — locked items always show a lock-colored dot
+      const dotColor = isLocked ? '#aab0c0' : (hidden ? 'var(--red)' : 'var(--green)');
+      html += '<div style="text-align:center"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:' + dotColor + ';" id="ovdot-' + it.id + '"></span></div>';
+
+      // Item name/code
+      html += '<div>'
+            + '<span style="font-family:monospace;font-weight:700;font-size:11px;color:' + (isLocked ? 'var(--gray-700)' : hidden ? 'var(--gray-500)' : 'var(--navy)') + ';text-decoration:' + (hidden ? 'line-through' : 'none') + ';" id="ovlabel-' + it.id + '">' + it.code + '</span>'
+            + (it.isAnchor ? ' <span style="font-size:9px;background:var(--navy);color:#fff;padding:1px 5px;border-radius:2px;vertical-align:middle;">PKG ITEM</span>' : '')
+            + (isLocked && !it.isAnchor ? ' <span style="font-size:9px;background:#e8eaf0;color:var(--gray-500);padding:1px 5px;border-radius:2px;vertical-align:middle;">Required</span>' : '')
+            + '<div style="font-size:11px;color:' + (hidden ? 'var(--gray-500)' : 'var(--gray-700)') + ';font-style:' + (hidden ? 'italic' : 'normal') + ';" id="ovname-' + it.id + '">' + it.name + '</div>'
+            + '</div>';
+
+      // Lock icon OR Activate/Deactivate button
+      if (isLocked) {
+        html += '<div style="text-align:center">'
+              + '<span title="Cannot be deactivated — item is Required and not a Choose-One option" '
+              + 'style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--gray-500);'
+              + 'background:#e8eaf0;border:1px solid var(--gray-300);border-radius:3px;padding:4px 10px;cursor:default;">'
+              + '🔒 Locked</span></div>';
+      } else {
+        html += '<div style="text-align:center">'
+              + '<button id="ovbtn-' + it.id + '" data-itemid="' + it.id + '" data-deactivate="' + (!hidden) + '" data-code="' + dataCode + '" data-fpkg="' + it.fromPkgId + '" onclick="toggleOvRow(this.dataset.itemid, this.dataset.deactivate===\'true\', this.dataset.code, this.dataset.fpkg)" '
+              + 'style="border:none;border-radius:3px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;'
+              + 'background:' + (hidden ? '#d4f5e5' : '#fde8e6') + ';color:' + (hidden ? 'var(--green)' : 'var(--red)') + ';">'
+              + (hidden ? '✓ Activate' : '✕ Deactivate') + '</button></div>';
+      }
+
+      // Price override — locked items get grayed out inputs
+      html += '<div style="text-align:center"><input type="number" style="width:70px;border:1px solid var(--gray-300);border-radius:3px;padding:3px 5px;font-size:11px;font-family:monospace;text-align:center;"'
+            + ' id="ovp-' + it.id + '" placeholder="—" value="' + (ov.price!=null?ov.price:'') + '"'
+            + ' data-fpkg="' + it.fromPkgId + '" data-code="' + dataCode + '" ' + (hidden || isLocked ? 'disabled' : '') + '></div>';
+
+      // Req / Quote Req / Deliv Req selects — locked items get disabled
+      ['ovr','ovqr','ovdr'].forEach((pfx, idx) => {
+        const field = ['required','quoteReq','deliveryReq'][idx];
+        const val = ov[field];
+        html += '<div style="text-align:center"><select id="' + pfx + '-' + it.id + '" '
+              + 'style="font-size:11px;border:1px solid var(--gray-300);border-radius:3px;padding:3px;width:70px;" '
+              + (hidden || isLocked ? 'disabled ' : '')
+              + 'data-fpkg="' + it.fromPkgId + '" data-code="' + dataCode + '">'
+              + '<option value="inherit">Inherit</option>'
+              + '<option value="yes"' + (val===true?' selected':'') + '>Yes</option>'
+              + '<option value="no"' + (val===false?' selected':'') + '>No</option>'
+              + '</select></div>';
+      });
+
+      html += '</div>'; // end row
+    });
+
+    html += '</div>'; // end sub-package group
+  });
+
+  if (!html) html = '<div style="padding:24px;text-align:center;color:var(--gray-500);font-size:12px;">No sub-packages attached.</div>';
+  list.innerHTML = html;
+  openModal('modal-overrides');
+}
+
+function toggleAllItems(subPkgId, parentPkgId, deactivate) {
+  const sub = getPkg(subPkgId);
+  if (!sub) return;
+  const subItems = allSubItems(subPkgId);
+  subItems.forEach(it => {
+    // Skip locked items (Required=Yes, ChooseOne=No)
+    if (it.required === true && it.chooseOne !== true) return;
+    const rowEl = document.getElementById('ovrow-' + it.id);
+    if (rowEl) toggleOvRow(it.id, deactivate, it.code, it.fromPkgId);
+  });
+  // anchor is always locked — skip it
+}
+
+function toggleOvRow(itemId, deactivate, code, fromPkg) {
+  const row = document.getElementById('ovrow-' + itemId);
+  if (!row) return;
+  row.style.background = deactivate ? '#fff0f0' : (itemId.includes('_anchor') ? '#f3f0ff' : '#fff');
+  row.style.opacity = deactivate ? 0.6 : 1;
+
+  // Update dot
+  const dot = document.getElementById('ovdot-' + itemId);
+  if (dot) dot.style.background = deactivate ? 'var(--red)' : 'var(--green)';
+
+  // Update label strikethrough
+  const lbl = document.getElementById('ovlabel-' + itemId);
+  if (lbl) { lbl.style.textDecoration = deactivate ? 'line-through' : 'none'; lbl.style.color = deactivate ? 'var(--gray-500)' : 'var(--navy)'; }
+  const nm = document.getElementById('ovname-' + itemId);
+  if (nm) { nm.style.fontStyle = deactivate ? 'italic' : 'normal'; nm.style.color = deactivate ? 'var(--gray-500)' : 'var(--gray-700)'; }
+
+  // Update button
+  const btn = document.getElementById('ovbtn-' + itemId);
+  if (btn) {
+    btn.textContent = deactivate ? '✓ Activate' : '✕ Deactivate';
+    btn.style.background = deactivate ? '#d4f5e5' : '#fde8e6';
+    btn.style.color = deactivate ? 'var(--green)' : 'var(--red)';
+    btn.dataset.deactivate = String(!deactivate);
+  }
+
+  // Disable/enable other inputs
+  ['ovp-','ovr-','ovqr-','ovdr-'].forEach(pfx => {
+    const el = document.getElementById(pfx + itemId);
+    if (el) el.disabled = deactivate;
+  });
+
+  // Update hidden checkbox (used by saveOverrides)
+  let cb = document.getElementById('ovh-' + itemId);
+  if (!cb) {
+    cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.id = 'ovh-' + itemId; cb.style.display = 'none';
+    cb.dataset.fpkg = fromPkg; cb.dataset.code = code;
+    row.appendChild(cb);
+  }
+  cb.checked = deactivate;
+}
+
+function saveOverrides() {
+  const p = getPkg(overridePkgId);
+  if (!p.overrides) p.overrides = {};
+  // Find all price input elements in the overrides list — they carry fromPkg + code
+  document.querySelectorAll('#overrides-list input[id^="ovp-"]').forEach(priceEl => {
+    const itemId  = priceEl.id.replace('ovp-','');
+    const fromPkg = priceEl.dataset.fpkg;
+    const code    = priceEl.dataset.code;
+    if (!fromPkg || !code) return;
+    if (!p.overrides[fromPkg]) p.overrides[fromPkg] = {};
+    const qrEl = document.getElementById('ovqr-' + itemId);
+    const drEl = document.getElementById('ovdr-' + itemId);
+    const rEl  = document.getElementById('ovr-'  + itemId);
+    const hEl  = document.getElementById('ovh-'  + itemId);
+    const btnEl = document.getElementById('ovbtn-' + itemId);
+    // Determine hidden state from button text (most reliable)
+    const isHidden = btnEl ? btnEl.textContent.trim() === '✓ Activate' : (hEl ? hEl.checked : false);
+    p.overrides[fromPkg][code] = {
+      hidden:      isHidden,
+      price:       priceEl.value !== '' ? parseFloat(priceEl.value) : null,
+      required:    rEl  ? (rEl.value  === 'inherit' ? null : rEl.value  === 'yes') : null,
+      quoteReq:    qrEl ? (qrEl.value === 'inherit' ? null : qrEl.value === 'yes') : null,
+      deliveryReq: drEl ? (drEl.value === 'inherit' ? null : drEl.value === 'yes') : null,
+    };
+  });
+  closeModal('modal-overrides');
+  showToast('✓ Overrides saved.');
+  renderAll();
+}
+
+// ═══════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['packages','choosone'][i]===name));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`tab-${name}`).classList.add('active');
+}
+function filterView(v) { renderPackages(v.toLowerCase()); }
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+
+function syncQtyFromFlags() {
+  const required  = document.getElementById('fi-required').checked;
+  const chooseOne = document.getElementById('fi-chooseone').checked;
+  const minEl = document.getElementById('fi-minqty');
+  const maxEl = document.getElementById('fi-maxqty');
+
+  if (chooseOne) {
+    // Mutually exclusive pick — always exactly 1
+    minEl.value = 1;
+    maxEl.value = 1;
+    minEl.disabled = true;
+    maxEl.disabled = true;
+    setQtyHint('Choose One is set — qty locked to 1 / 1 (user picks one option from the group).');
+  } else if (required) {
+    // Required: must order at least 1
+    if (parseInt(minEl.value) < 1) minEl.value = 1;
+    minEl.disabled = false;
+    maxEl.disabled = false;
+    setQtyHint('Required is on — Min Qty set to at least 1. Adjust Max Qty if the user can order more than one.');
+  } else {
+    // Not required: can be 0
+    minEl.value = 0;
+    minEl.disabled = false;
+    maxEl.disabled = false;
+    setQtyHint('Not required — Min Qty set to 0. User can choose not to include this item.');
+  }
+}
+
+function setQtyHint(msg) {
+  const el = document.getElementById('qty-auto-hint');
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+document.querySelectorAll('.modal-backdrop').forEach(bd => {
+  bd.addEventListener('click', e => { if (e.target === bd) bd.classList.remove('open'); });
+});
+
+// INIT
+renderAll();
+</script>
+</body>
+</html>
