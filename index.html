@@ -776,7 +776,7 @@ const packages = [
       { id:'r1g', code:'BLREX10GR',  name:'Bigleaf 4-port Expansion Card (Unit B)', amount:11.95, billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:1 },
     ]
   }
-];;
+];
 
 // ═══════════════════════════════════════════════════
 // HELPERS
@@ -934,9 +934,14 @@ function buildPkgCard(p, depth) {
       <div class="add-item-row">
         <button class="btn btn-green btn-sm" onclick="openAddItemModal('${p.id}')">＋ Add Item</button>
       </div>
-      ${p.subPackageIds.length ? buildSubPkgsSection(p) : ''}
     </div>
   `;
+
+  // Append sub-packages as DOM node (supports unlimited recursion)
+  if (p.subPackageIds.length) {
+    const body = wrap.querySelector(`#body-${p.id}`);
+    if (body) body.appendChild(buildSubPkgsSection(p, depth));
+  }
 
   return wrap;
 }
@@ -1076,56 +1081,77 @@ function buildCoGroupHeader(coGroup, pkgId) {
   return el.outerHTML.replace('</div>', '');
 }
 
-function buildSubPkgsSection(p) {
+function buildSubPkgsSection(p, depth) {
+  depth = depth || 0;
   const coGroup = p.subPkgChooseOneGroup || null;
-  let html = '<div class="sub-pkgs-section">';
+  const wrapper = document.createElement('div');
+  wrapper.className = 'sub-pkgs-section';
 
   // Header
   const coGroupBadge = coGroup ? ' &nbsp;<span style="font-size:10px;background:var(--purple);color:#fff;padding:2px 8px;border-radius:3px;">Choose One: ' + coGroup + '</span>' : '';
-  html += '<div class="sub-pkgs-label">&#x2299; Nested Sub-Packages (' + p.subPackageIds.length + ')' + coGroupBadge + '</div>';
+  const lbl = document.createElement('div');
+  lbl.className = 'sub-pkgs-label';
+  lbl.innerHTML = '&#x2299; Nested Sub-Packages (' + p.subPackageIds.length + ')' + coGroupBadge;
+  wrapper.appendChild(lbl);
 
-  // If choose-one group, wrap in a visual bracket
+  // Choose-one bracket container
+  let container = wrapper;
   if (coGroup) {
-    html += buildCoGroupHeader(coGroup, p.id);
+    const bracket = buildCoGroupHeader(coGroup, p.id);
+    // buildCoGroupHeader returns an HTML string (unclosed outer div) — use a node approach instead
+    const bracketEl = document.createElement('div');
+    bracketEl.style.cssText = 'border:2px solid var(--purple);border-radius:6px;overflow:hidden;margin:4px 0 8px;';
+    const hdrEl = document.createElement('div');
+    hdrEl.style.cssText = 'background:var(--purple);color:#fff;padding:5px 12px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:8px;';
+    const lblEl = document.createElement('span');
+    lblEl.textContent = 'Customer picks ONE: ' + coGroup;
+    const btnEl = document.createElement('button');
+    btnEl.className = 'btn btn-sm';
+    btnEl.textContent = 'Change Grouping';
+    btnEl.style.cssText = 'background:rgba(255,255,255,0.2);color:#fff;font-size:10px;padding:2px 8px;margin-left:auto;';
+    btnEl.dataset.pkgid = p.id;
+    btnEl.setAttribute('onclick', 'event.stopPropagation();openEditPkgModal(this.dataset.pkgid)');
+    hdrEl.appendChild(lblEl);
+    hdrEl.appendChild(btnEl);
+    bracketEl.appendChild(hdrEl);
+    wrapper.appendChild(bracketEl);
+    container = bracketEl;
   }
 
   p.subPackageIds.forEach((sid, idx) => {
     const sub = getPkg(sid);
     if (!sub) return;
+
+    // OR divider between choose-one options
+    if (coGroup && idx > 0) {
+      const divider = document.createElement('div');
+      divider.style.cssText = 'display:flex;align-items:center;gap:8px;padding:4px 12px;background:#f0ebff;border-top:1px solid #d8cff0;border-bottom:1px solid #d8cff0;';
+      divider.innerHTML = '<span style="font-size:10px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:0.5px;">— OR —</span>';
+      container.appendChild(divider);
+    }
+
+    // Build the sub-package card — fully recursive
+    const subCard = buildPkgCard(sub, depth + 1);
+
+    // Deactivated banner
     const subItems = allSubItems(sid);
     const deactivated = subItems.filter(it => {
       const ov = ((p.overrides || {})[it.fromPkgId] || {})[it.code] || {};
       return ov.hidden;
     });
-
-    // Divider between choose-one options
-    if (coGroup && idx > 0) {
-      html += '<div style="display:flex;align-items:center;gap:8px;padding:4px 12px;background:#f0ebff;border-top:1px solid #d8cff0;border-bottom:1px solid #d8cff0;">'
-            + '<span style="font-size:10px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:0.5px;">— OR —</span>'
-            + '</div>';
-    }
-
-    const subCard = buildPkgCard(sub, 1);
     if (deactivated.length) {
-      const div = document.createElement('div');
-      div.innerHTML = subCard.outerHTML;
-      const hdr = div.querySelector('.pkg-header');
-      if (hdr) {
-        const banner = document.createElement('div');
-        banner.style.cssText = 'background:#fff0f0;border-top:1px solid #f0c0c0;padding:5px 14px;font-size:11px;color:var(--red);display:flex;align-items:center;gap:6px;';
-        banner.innerHTML = '<span style="font-weight:700;">⊘ ' + deactivated.length + ' item' + (deactivated.length>1?'s':'') + ' deactivated in this context:</span> '
-          + deactivated.map(it => '<span style="font-family:monospace;background:#fde8e6;padding:1px 5px;border-radius:2px;text-decoration:line-through;">' + it.code + '</span>').join(' ');
-        div.firstChild.insertBefore(banner, div.querySelector('[id^="body-"]'));
-        html += div.innerHTML;
-        return;
-      }
+      const banner = document.createElement('div');
+      banner.style.cssText = 'background:#fff0f0;border-top:1px solid #f0c0c0;padding:5px 14px;font-size:11px;color:var(--red);display:flex;align-items:center;gap:6px;flex-wrap:wrap;';
+      banner.innerHTML = '<span style="font-weight:700;">⊘ ' + deactivated.length + ' item' + (deactivated.length>1?'s':'') + ' deactivated:</span> '
+        + deactivated.map(it => '<span style="font-family:monospace;background:#fde8e6;padding:1px 5px;border-radius:2px;text-decoration:line-through;">' + it.code + '</span>').join(' ');
+      const body = subCard.querySelector('[id^="body-"]');
+      if (body) subCard.insertBefore(banner, body);
     }
-    html += subCard.outerHTML;
+
+    container.appendChild(subCard);
   });
 
-  if (coGroup) html += '</div>'; // close choose-one bracket
-  html += '</div>';
-  return html;
+  return wrapper;
 }
 
 function renderChooseOne() {
@@ -1972,12 +1998,13 @@ function renderSubPkgItemsInner(parentPkgId, sub, sel) {
         }).join('')
       + '</div>';
   }
+  // Recurse into this sub-package's own sub-packages (e.g. Bigleaf -> BLR400R/BLR112R)
+  if (sub.subPackageIds && sub.subPackageIds.length) {
+    html += renderSubPkgConfigurator(parentPkgId, sub, sel['subsel_' + sub.id] || sel);
+  }
+
   return html;
 }
-
-// ═══════════════════════════════════════════════════
-// QUOTE INTERACTION HANDLERS
-// ═══════════════════════════════════════════════════
 function selectChooseOne(pkgId, grp, code) {
   if (!quoteState.selections[pkgId]) quoteState.selections[pkgId] = {};
   quoteState.selections[pkgId]['co_' + grp] = code;
