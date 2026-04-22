@@ -336,7 +336,19 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: #c8d4e8; color: var
   <div style="display:flex;align-items:center;gap:8px;">
     <span style="font-size:16px">⊙</span> BILL-O-MATIC — Package Manager
   </div>
-  <div class="topbar-right">ATT DIA — IP Circuit Packages</div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <div style="display:flex;background:rgba(255,255,255,0.1);border-radius:4px;padding:2px;gap:2px;">
+      <button id="view-admin-btn" onclick="setAppView('admin')"
+        style="border:none;border-radius:3px;padding:4px 12px;font-size:11px;font-family:'IBM Plex Sans',sans-serif;font-weight:600;cursor:pointer;background:#fff;color:var(--navy);">
+        ⚙ Admin
+      </button>
+      <button id="view-quote-btn" onclick="setAppView('quote')"
+        style="border:none;border-radius:3px;padding:4px 12px;font-size:11px;font-family:'IBM Plex Sans',sans-serif;font-weight:600;cursor:pointer;background:transparent;color:rgba(255,255,255,0.7);">
+        📋 Configure &amp; Quote
+      </button>
+    </div>
+    <div class="topbar-right">ATT DIA — IP Circuit Packages</div>
+  </div>
 </div>
 
 <!-- TABS -->
@@ -416,6 +428,10 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: #c8d4e8; color: var
         <div class="flag-row"><span>Choose One</span><label class="toggle"><input type="checkbox" id="f-chooseone"><span class="toggle-slider"></span></label></div>
         <div class="flag-row"><span>Quote Required</span><label class="toggle"><input type="checkbox" id="f-quotereq"><span class="toggle-slider"></span></label></div>
         <div class="flag-row"><span>Delivery Required</span><label class="toggle"><input type="checkbox" id="f-delivreq"><span class="toggle-slider"></span></label></div>
+        <div class="flag-row" style="border:1px solid #f0d080;background:#fffbf0;">
+          <span>Internal Only <span style="font-size:10px;color:var(--gray-500);font-weight:400;">— hide from top-level, sub-package use only</span></span>
+          <label class="toggle"><input type="checkbox" id="f-internal"><span class="toggle-slider"></span></label>
+        </div>
       </div>
 
       <div class="section-label">Attach Sub-Packages</div>
@@ -528,6 +544,51 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: #c8d4e8; color: var
   </div>
 </div>
 
+<!-- ══════════ QUOTE VIEW ══════════ -->
+<div id="quote-view" style="display:none;background:#f0f4fb;min-height:calc(100vh - 40px);">
+
+  <!-- Quote header bar -->
+  <div style="background:#fff;border-bottom:2px solid var(--gray-200);padding:12px 20px;display:flex;align-items:center;gap:12px;">
+    <div>
+      <div style="font-size:18px;font-weight:700;color:var(--navy);">Configure &amp; Quote</div>
+      <div style="font-size:12px;color:var(--gray-500);margin-top:2px;">Select a service and configure your options</div>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:10px;">
+      <div id="quote-total-bar" style="font-family:monospace;font-size:16px;font-weight:700;color:var(--navy);background:var(--gray-100);padding:6px 16px;border-radius:4px;border:1px solid var(--gray-200);">
+        Total: $0.00 / mo
+      </div>
+      <button class="btn btn-blue" onclick="generateQuote()">Generate Quote</button>
+      <button class="btn btn-gray" onclick="resetQuote()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Service type picker -->
+  <div style="padding:16px 20px;background:#fff;border-bottom:1px solid var(--gray-200);">
+    <div style="font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">Select Service Type</div>
+    <div id="quote-stype-btns" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+  </div>
+
+  <!-- Package picker + configurator -->
+  <div style="display:flex;gap:0;min-height:calc(100vh - 180px);">
+
+    <!-- Left: package list -->
+    <div style="width:280px;flex-shrink:0;background:#fff;border-right:1px solid var(--gray-200);overflow-y:auto;">
+      <div style="padding:10px 14px;font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.8px;border-bottom:1px solid var(--gray-200);">Available Packages</div>
+      <div id="quote-pkg-list"></div>
+    </div>
+
+    <!-- Right: configurator -->
+    <div style="flex:1;overflow-y:auto;padding:20px;">
+      <div id="quote-configurator">
+        <div style="text-align:center;padding:60px 20px;color:var(--gray-500);">
+          <div style="font-size:48px;margin-bottom:12px;opacity:0.3;">⊙</div>
+          <div style="font-size:14px;font-weight:600;">Select a service type and package to begin configuring</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -542,6 +603,7 @@ let overridePkgId = null;
 const packages = [
   {
     id: 'pkg1',
+    internal: false,
     code: 'IPCT2M009A',
     serviceType: 'Internet Access',
     name: 'IP Circuit',
@@ -564,6 +626,7 @@ const packages = [
   },
   {
     id: 'pkg2',
+    internal: false,
     code: 'JEX230012R',
     serviceType: 'Edge Router',
     name: 'JUNIPER EX2300-C-12T - RENTAL',
@@ -589,6 +652,7 @@ const packages = [
   },
   {
     id: 'pkg3',
+    internal: false,
     code: 'IPCT2M009B',
     serviceType: 'Internet Access',
     name: 'IP Circuit - 009B',
@@ -596,7 +660,7 @@ const packages = [
     billingOverride: 'No',
     required: false, chooseOne: false,
     quoteReq: false, deliveryReq: false,
-    subPackageIds: ['pkg2','pkg4'],
+    subPackageIds: ['pkg2','pkg4','pkg5'],
     subPkgChooseOneGroup: 'Edge Router',
     overrides: {},
     collapsed: false,
@@ -611,6 +675,7 @@ const packages = [
   },
   {
     id: 'pkg4',
+    internal: false,
     code: 'UISP12R',
     serviceType: 'Edge Router',
     name: 'UBNT UISP - RENTAL',
@@ -633,15 +698,92 @@ const packages = [
       { id:'u8', code:'IPADRES29', name:'Static IP Address',                  amount:0, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'IP Address Type', minQty:1, maxQty:1 },
       { id:'u9', code:'IPADDDHCP', name:'DHCP IP Address',                    amount:0, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'IP Address Type', minQty:1, maxQty:1 },
     ]
+  },
+  {
+    id: 'pkg5',
+    internal: false,
+    code: 'MGDBLPREHA',
+    serviceType: 'SD-WAN',
+    name: 'Managed Bigleaf High Availability',
+    amount: 49.95,
+    billingOverride: 'No',
+    required: true, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: ['pkg6','pkg7'],
+    subPkgChooseOneGroup: 'Bigleaf Router',
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: [
+      { id:'bl1',  code:'BLIPADR29',   name:'Bigleaf 5 Public IP /29',              amount:19.95,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'bl2',  code:'BLIPADR28',   name:'Bigleaf 13 Public IP /28',             amount:64.95,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'bl3',  code:'BLIPADR27',   name:'Bigleaf 29 Public IP /27',             amount:128.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'bl4',  code:'BLIPADR26',   name:'Bigleaf 61 Public IP /26',             amount:256.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'bl5',  code:'U8PRTLTR-A',  name:'Ubiquiti 8PORT Lite 4PoE 4NON - RENTAL (Unit A)', amount:4.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'bl6',  code:'U8PRTLTR-B',  name:'Ubiquiti 8PORT Lite 4PoE 4NON - RENTAL (Unit B)', amount:4.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'bl7',  code:'BL112SFPR',   name:'Bigleaf SFP+ Optic Module 10G BASE-SR SF', amount:3.95, billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'bl8',  code:'BLSFP1GMR',   name:'SFP Bigleaf 1G MMF - Rental',          amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'bl9',  code:'BLSFP1GSR',   name:'SFP Bigleaf 1G SMF - Rental',          amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'bl10', code:'BLSFP10GSR',  name:'SFP Bigleaf 10G SMF - Rental',         amount:1.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'bl11', code:'BLSFP10GMR',  name:'SFP Bigleaf 10G MMF - Rental',         amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+    ]
+  },
+  {
+    id: 'pkg6',
+    code: 'BLR400R',
+    internal: true,
+    serviceType: 'SD-WAN',
+    name: 'Bigleaf 400 Router Rental',
+    amount: 6.95,
+    billingOverride: 'No',
+    required: true, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: [],
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: [
+      { id:'r4a', code:'BLR400R-A',  name:'Bigleaf 400 Router Rental (Unit A)', amount:6.95,   billingOverride:'No', required:true,  chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'r4b', code:'BLR400R-B',  name:'Bigleaf 400 Router Rental (Unit B)', amount:6.95,   billingOverride:'No', required:true,  chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'r4c', code:'BLP75LIC',   name:'Bigleaf Premier Bandwidth License 75Mbps',   amount:128.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Bandwidth License', minQty:1, maxQty:1 },
+      { id:'r4d', code:'BLP150LIC',  name:'Bigleaf Premier Bandwidth License 150Mbps',  amount:153.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Bandwidth License', minQty:1, maxQty:1 },
+      { id:'r4e', code:'BLP300LIC',  name:'Bigleaf Premier Bandwidth License 300Mbps',  amount:192.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Bandwidth License', minQty:1, maxQty:1 },
+      { id:'r4f', code:'BLP500LIC',  name:'Bigleaf Premier Bandwidth License 500Mbps',  amount:307.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Bandwidth License', minQty:1, maxQty:1 },
+      { id:'r4g', code:'BL1G100LIC', name:'Bigleaf Premier Bandwidth License 1G/100M',  amount:333.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Bandwidth License', minQty:1, maxQty:1 },
+    ]
+  },
+  {
+    id: 'pkg7',
+    code: 'BLR112R',
+    internal: true,
+    serviceType: 'SD-WAN',
+    name: 'Bigleaf 112 Router Rental',
+    amount: 13.95,
+    billingOverride: 'No',
+    required: true, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: [],
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: [
+      { id:'r1a', code:'BLR112R-A',  name:'Bigleaf 112 Router Rental (Unit A)', amount:13.95,  billingOverride:'No', required:true,  chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'r1b', code:'BLR112R-B',  name:'Bigleaf 112 Router Rental (Unit B)', amount:13.95,  billingOverride:'No', required:true,  chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'r1c', code:'BL1000LIC',  name:'Bigleaf Bandwidth License 1000Mbps', amount:179.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Bandwidth License', minQty:1, maxQty:1 },
+      { id:'r1d', code:'BL2000LIC',  name:'Bigleaf Bandwidth License 2000Mbps', amount:384.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Bandwidth License', minQty:1, maxQty:1 },
+      { id:'r1e', code:'BL3000LIC',  name:'Bigleaf Bandwidth License 3000Mbps', amount:576.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Bandwidth License', minQty:1, maxQty:1 },
+      { id:'r1f', code:'BLREX1GR',   name:'Bigleaf 4-port Expansion Card (Unit A)', amount:11.95, billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:1 },
+      { id:'r1g', code:'BLREX10GR',  name:'Bigleaf 4-port Expansion Card (Unit B)', amount:11.95, billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:1 },
+    ]
   }
-];
+];;
 
 // ═══════════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════════
 
 
-let serviceTypes = ['Internet Access', 'Edge Router'];
+let serviceTypes = ['Internet Access', 'Edge Router', 'SD-WAN'];
 let activeServiceFilter = null;
 
 function addServiceType() {
@@ -684,6 +826,10 @@ function getParentPkgs(pkgId) {
 
 function getPkg(id) { return packages.find(p => p.id === id); }
 function uid()      { return 'x' + Math.random().toString(36).slice(2,9); }
+function internalBadge(p) {
+  if (!p.internal) return '';
+  return '<span style="font-size:9px;background:rgba(255,200,0,0.25);color:#ffe080;border:1px solid rgba(255,200,0,0.4);padding:1px 6px;border-radius:2px;margin-left:4px;">INTERNAL</span>';
+}
 function pill(val, yes='Yes', no='No') {
   if (val === null || val === '' || val === undefined) return `<span class="pill pill-blank">—</span>`;
   return val ? `<span class="pill pill-yes">${yes}</span>` : `<span class="pill pill-no">${no}</span>`;
@@ -719,7 +865,7 @@ function renderPackages(filter='') {
   container.innerHTML = '';
   renderServiceTypeFilters();
 
-  let visible = packages.slice();
+  let visible = packages.filter(p => !p.internal); // internal packages only appear as sub-packages
   if (filter) visible = visible.filter(p => p.code.toLowerCase().includes(filter) || p.name.toLowerCase().includes(filter));
   if (activeServiceFilter) visible = visible.filter(p => p.serviceType === activeServiceFilter);
 
@@ -762,7 +908,7 @@ function buildPkgCard(p, depth) {
   wrap.innerHTML = `
     <div class="pkg-header${hClass}" onclick="toggleCard('${p.id}')">
       <button class="collapse-btn${p.collapsed?'':' open'}" onclick="event.stopPropagation();toggleCard('${p.id}')" title="Collapse/expand">▶</button>
-      <span class="pkg-code">${p.code}</span>
+      <span class="pkg-code">${p.code}</span>${internalBadge(p)}
       <span class="pkg-name">${p.name}</span>
       <span class="pkg-amount">${fmt(p.amount)}</span>
       ${(function(){
@@ -911,23 +1057,36 @@ function buildItemsTable(p) {
   `;
 }
 
+function buildCoGroupHeader(coGroup, pkgId) {
+  const el = document.createElement('div');
+  el.style.cssText = 'border:2px solid var(--purple);border-radius:6px;overflow:hidden;margin:4px 0 8px;';
+  const hdr = document.createElement('div');
+  hdr.style.cssText = 'background:var(--purple);color:#fff;padding:5px 12px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:8px;';
+  const lbl = document.createElement('span');
+  lbl.textContent = 'Customer picks ONE: ' + coGroup;
+  const btn = document.createElement('button');
+  btn.className = 'btn btn-sm';
+  btn.textContent = 'Change Grouping';
+  btn.style.cssText = 'background:rgba(255,255,255,0.2);color:#fff;font-size:10px;padding:2px 8px;margin-left:auto;';
+  btn.dataset.pkgid = pkgId;
+  btn.setAttribute('onclick', 'event.stopPropagation();openEditPkgModal(this.dataset.pkgid)');
+  hdr.appendChild(lbl);
+  hdr.appendChild(btn);
+  el.appendChild(hdr);
+  return el.outerHTML.replace('</div>', '');
+}
+
 function buildSubPkgsSection(p) {
   const coGroup = p.subPkgChooseOneGroup || null;
   let html = '<div class="sub-pkgs-section">';
 
   // Header
-  html += '<div class="sub-pkgs-label">⊙ Nested Sub-Packages (' + p.subPackageIds.length + ')'
-        + (coGroup ? ' &nbsp;<span style="font-size:10px;background:var(--purple);color:#fff;padding:2px 8px;border-radius:3px;text-transform:none;letter-spacing:0;">⊙ Choose One: ' + coGroup + '</span>' : '')
-        + '</div>';
+  const coGroupBadge = coGroup ? ' &nbsp;<span style="font-size:10px;background:var(--purple);color:#fff;padding:2px 8px;border-radius:3px;">Choose One: ' + coGroup + '</span>' : '';
+  html += '<div class="sub-pkgs-label">&#x2299; Nested Sub-Packages (' + p.subPackageIds.length + ')' + coGroupBadge + '</div>';
 
   // If choose-one group, wrap in a visual bracket
   if (coGroup) {
-    html += '<div style="border:2px solid var(--purple);border-radius:6px;overflow:hidden;margin:4px 0 8px;">';
-    html += '<div style="background:var(--purple);color:#fff;padding:5px 12px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:8px;">'
-          + '<span>⊙ Customer picks ONE of these ' + coGroup + ' options:</span>'
-          + '<button class="btn btn-sm" style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;padding:2px 8px;margin-left:auto;" '
-          + 'onclick="event.stopPropagation();openEditPkgModal(\'' + p.id + '\')">Change Grouping</button>'
-          + '</div>';
+    html += buildCoGroupHeader(coGroup, p.id);
   }
 
   p.subPackageIds.forEach((sid, idx) => {
@@ -1027,6 +1186,7 @@ function fillPkgForm(p) {
   document.getElementById('f-amount').value   = p ? p.amount : 0;
   document.getElementById('f-billovr').value  = p ? p.billingOverride : 'No';
   document.getElementById('f-subpkg-cogroup').value = p ? (p.subPkgChooseOneGroup || '') : '';
+  document.getElementById('f-internal').checked = p ? (p.internal || false) : false;
   document.getElementById('f-required').checked  = p ? p.required  : false;
   document.getElementById('f-chooseone').checked = p ? p.chooseOne : false;
   document.getElementById('f-quotereq').checked  = p ? p.quoteReq  : false;
@@ -1040,7 +1200,7 @@ function renderSubPkgList(excludeId, currentSubs) {
   list.innerHTML = candidates.map(p => `
     <div class="sub-pkg-opt">
       <input type="checkbox" id="sub-${p.id}" value="${p.id}" ${currentSubs && currentSubs.includes(p.id) ? 'checked' : ''}>
-      <label for="sub-${p.id}"><code>${p.code}</code> — ${p.name}</label>
+      <label for="sub-${p.id}"><code>${p.code}</code>${internalBadge(p)} — ${p.name}</label>
     </div>
   `).join('');
 }
@@ -1080,6 +1240,7 @@ function savePkg() {
     p.billingOverride= document.getElementById('f-billovr').value;
     p.serviceType    = document.getElementById('f-servicetype').value;
     p.subPkgChooseOneGroup = document.getElementById('f-subpkg-cogroup').value.trim() || null;
+    p.internal = document.getElementById('f-internal').checked;
     p.required       = document.getElementById('f-required').checked;
     p.chooseOne      = document.getElementById('f-chooseone').checked;
     p.quoteReq       = document.getElementById('f-quotereq').checked;
@@ -1097,6 +1258,7 @@ function savePkg() {
       billingOverride: document.getElementById('f-billovr').value,
       serviceType: document.getElementById('f-servicetype').value,
       subPkgChooseOneGroup: document.getElementById('f-subpkg-cogroup').value.trim() || null,
+      internal: document.getElementById('f-internal').checked,
       required:    document.getElementById('f-required').checked,
       chooseOne:   document.getElementById('f-chooseone').checked,
       quoteReq:    document.getElementById('f-quotereq').checked,
@@ -1455,6 +1617,493 @@ function showToast(msg) {
 document.querySelectorAll('.modal-backdrop').forEach(bd => {
   bd.addEventListener('click', e => { if (e.target === bd) bd.classList.remove('open'); });
 });
+
+
+// ═══════════════════════════════════════════════════
+// VIEW TOGGLE
+// ═══════════════════════════════════════════════════
+let currentAppView = 'admin';
+
+function setAppView(view) {
+  currentAppView = view;
+  const adminEl  = document.querySelector('.tabs');
+  const panelsEl = document.querySelectorAll('.panel');
+  const quoteEl  = document.getElementById('quote-view');
+  const adminBtn = document.getElementById('view-admin-btn');
+  const quoteBtn = document.getElementById('view-quote-btn');
+
+  if (view === 'quote') {
+    adminEl.style.display  = 'none';
+    panelsEl.forEach(p => p.style.display = 'none');
+    quoteEl.style.display  = 'block';
+    adminBtn.style.background = 'transparent';
+    adminBtn.style.color      = 'rgba(255,255,255,0.7)';
+    quoteBtn.style.background = '#fff';
+    quoteBtn.style.color      = 'var(--navy)';
+    initQuoteView();
+  } else {
+    adminEl.style.display  = '';
+    panelsEl.forEach(p => p.style.display = '');
+    document.getElementById('tab-packages').style.display = 'block';
+    document.getElementById('tab-choosone').style.display = 'none';
+    quoteEl.style.display  = 'none';
+    adminBtn.style.background = '#fff';
+    adminBtn.style.color      = 'var(--navy)';
+    quoteBtn.style.background = 'transparent';
+    quoteBtn.style.color      = 'rgba(255,255,255,0.7)';
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// QUOTE STATE
+// ═══════════════════════════════════════════════════
+let quoteState = {
+  serviceFilter: null,
+  selectedPkgId: null,
+  selections: {}   // pkgId -> { chooseOneGroup -> selectedCode, itemCode -> qty, subPkgId -> selectedSubPkgId }
+};
+
+function resetQuote() {
+  quoteState = { serviceFilter: null, selectedPkgId: null, selections: {} };
+  initQuoteView();
+}
+
+// ═══════════════════════════════════════════════════
+// INIT QUOTE VIEW
+// ═══════════════════════════════════════════════════
+function initQuoteView() {
+  renderQuoteServiceTypes();
+  renderQuotePkgList();
+  if (quoteState.selectedPkgId) {
+    renderConfigurator(quoteState.selectedPkgId);
+  } else {
+    document.getElementById('quote-configurator').innerHTML =
+      '<div style="text-align:center;padding:60px 20px;color:var(--gray-500);">'
+      + '<div style="font-size:48px;margin-bottom:12px;opacity:0.3;">⊙</div>'
+      + '<div style="font-size:14px;font-weight:600;">Select a package to begin configuring</div>'
+      + '</div>';
+  }
+  updateQuoteTotal();
+}
+
+function renderQuoteServiceTypes() {
+  const bar = document.getElementById('quote-stype-btns');
+  const types = [...new Set(packages.filter(p => !p.internal).map(p => p.serviceType).filter(Boolean))].sort();
+  bar.innerHTML =
+    '<button class="stype-btn' + (quoteState.serviceFilter === null ? ' active' : '') + '" onclick="setQuoteServiceFilter(null,this)">All Services</button>'
+    + types.map(t =>
+        '<button class="stype-btn' + (quoteState.serviceFilter === t ? ' active' : '') + '" data-stype="' + t + '" onclick="setQuoteServiceFilter(this.dataset.stype,this)">' + t + '</button>'
+      ).join('');
+}
+
+function setQuoteServiceFilter(type, btn) {
+  quoteState.serviceFilter = type;
+  quoteState.selectedPkgId = null;
+  document.querySelectorAll('#quote-stype-btns .stype-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderQuotePkgList();
+  initQuoteView();
+}
+
+function renderQuotePkgList() {
+  const list = document.getElementById('quote-pkg-list');
+  let pkgs = packages.filter(p => !p.internal);
+  if (quoteState.serviceFilter) pkgs = pkgs.filter(p => p.serviceType === quoteState.serviceFilter);
+
+  if (!pkgs.length) {
+    list.innerHTML = '<div style="padding:16px;font-size:12px;color:var(--gray-500);">No packages available.</div>';
+    return;
+  }
+
+  // Group by service type
+  const groups = {};
+  pkgs.forEach(p => {
+    const t = p.serviceType || 'Other';
+    if (!groups[t]) groups[t] = [];
+    groups[t].push(p);
+  });
+
+  list.innerHTML = Object.keys(groups).sort().map(t => `
+    <div>
+      <div style="padding:6px 14px;font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.8px;background:var(--gray-100);border-bottom:1px solid var(--gray-200);">${t}</div>
+      ${groups[t].map(p => `
+        <div onclick="selectQuotePkg('${p.id}')"
+          style="padding:10px 14px;border-bottom:1px solid var(--gray-200);cursor:pointer;
+          background:${quoteState.selectedPkgId===p.id?'#dce8ff':'#fff'};
+          border-left:3px solid ${quoteState.selectedPkgId===p.id?'var(--blue)':'transparent'};
+          transition:all 0.1s;">
+          <div style="font-family:monospace;font-size:11px;font-weight:700;color:${quoteState.selectedPkgId===p.id?'var(--blue)':'var(--navy)'};">${p.code}</div>
+          <div style="font-size:12px;color:var(--gray-700);margin-top:2px;">${p.name}</div>
+          ${p.amount > 0 ? '<div style="font-size:11px;color:var(--green);font-family:monospace;margin-top:2px;">$' + p.amount.toFixed(2) + ' / mo</div>' : ''}
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+function selectQuotePkg(pkgId) {
+  quoteState.selectedPkgId = pkgId;
+  if (!quoteState.selections[pkgId]) quoteState.selections[pkgId] = {};
+  renderQuotePkgList();
+  renderConfigurator(pkgId);
+  updateQuoteTotal();
+}
+
+// ═══════════════════════════════════════════════════
+// CONFIGURATOR
+// ═══════════════════════════════════════════════════
+function renderConfigurator(pkgId) {
+  const p = getPkg(pkgId);
+  if (!p) return;
+  const sel = quoteState.selections[pkgId] || {};
+  let html = '';
+
+  // Package title
+  html += '<div style="margin-bottom:20px;">'
+        + '<div style="font-size:20px;font-weight:700;color:var(--navy);">' + p.name + '</div>'
+        + '<div style="font-family:monospace;font-size:12px;color:var(--gray-500);margin-top:2px;">' + p.code
+        + (p.serviceType ? ' &nbsp;·&nbsp; <span style="background:var(--blue-soft);color:var(--blue);padding:1px 7px;border-radius:3px;">' + p.serviceType + '</span>' : '')
+        + '</div>'
+        + '</div>';
+
+  // Anchor item (always included)
+  html += renderQuoteSection('Included', [{ code: p.code, name: p.name, amount: p.amount, fixed: true }]);
+
+  // Fixed items (required, not choose-one)
+  const fixedItems = (p.items || []).filter(it => it.required && !it.chooseOne);
+  if (fixedItems.length) html += renderQuoteSection('Required Items', fixedItems.map(it => ({ ...it, fixed: true })));
+
+  // Choose-One groups
+  const coGroups = {};
+  (p.items || []).filter(it => it.chooseOne && it.coGroup).forEach(it => {
+    if (!coGroups[it.coGroup]) coGroups[it.coGroup] = [];
+    coGroups[it.coGroup].push(it);
+  });
+  Object.keys(coGroups).forEach(grp => {
+    html += renderChooseOneGroup(pkgId, grp, coGroups[grp], sel);
+  });
+
+  // Optional items (not required, not choose-one)
+  const optItems = (p.items || []).filter(it => !it.required && !it.chooseOne);
+  if (optItems.length) html += renderOptionalItems(pkgId, optItems, sel);
+
+  // Sub-packages
+  if (p.subPackageIds && p.subPackageIds.length) {
+    html += renderSubPkgConfigurator(pkgId, p, sel);
+  }
+
+  // Running total for this package
+  html += '<div style="margin-top:24px;padding:14px 16px;background:var(--navy);color:#fff;border-radius:6px;display:flex;align-items:center;justify-content:space-between;">'
+        + '<span style="font-size:13px;font-weight:600;">Estimated Monthly Total</span>'
+        + '<span style="font-family:monospace;font-size:18px;font-weight:700;" id="pkg-running-total">$0.00 / mo</span>'
+        + '</div>';
+
+  document.getElementById('quote-configurator').innerHTML = html;
+  updateRunningTotal(pkgId);
+}
+
+function renderQuoteSection(title, items) {
+  return '<div style="margin-bottom:16px;">'
+    + '<div style="font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid var(--gray-200);">' + title + '</div>'
+    + items.map(it =>
+        '<div style="display:flex;align-items:center;padding:8px 12px;background:#fff;border:1px solid var(--gray-200);border-radius:4px;margin-bottom:4px;">'
+        + '<span style="font-family:monospace;font-size:11px;font-weight:700;color:var(--navy);min-width:110px;">' + it.code + '</span>'
+        + '<span style="font-size:12px;color:var(--gray-700);flex:1;">' + it.name + '</span>'
+        + (it.amount > 0 ? '<span style="font-family:monospace;font-size:12px;color:var(--green);font-weight:600;">$' + it.amount.toFixed(2) + '</span>' : '<span style="font-size:11px;color:var(--gray-500);">Included</span>')
+        + '</div>'
+      ).join('')
+    + '</div>';
+}
+
+function renderChooseOneGroup(pkgId, grp, items, sel) {
+  const selected = sel['co_' + grp] || null;
+  return '<div style="margin-bottom:16px;">'
+    + '<div style="font-size:11px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid var(--purple-soft);">⊙ Choose One: ' + grp + '</div>'
+    + '<div style="display:flex;flex-direction:column;gap:6px;">'
+    + items.map(it => {
+        const isSelected = selected === it.code;
+        return '<div data-pkgid="' + pkgId + '" data-grp="' + grp + '" data-code="' + it.code + '" onclick="selectChooseOne(this.dataset.pkgid,this.dataset.grp,this.dataset.code)" '
+          + 'style="display:flex;align-items:center;padding:10px 14px;border:2px solid ' + (isSelected ? 'var(--purple)' : 'var(--gray-200)') + ';'
+          + 'border-radius:6px;cursor:pointer;background:' + (isSelected ? '#f3f0ff' : '#fff') + ';transition:all 0.15s;">'
+          + '<div style="width:18px;height:18px;border-radius:50%;border:2px solid ' + (isSelected ? 'var(--purple)' : 'var(--gray-300)') + ';'
+          + 'background:' + (isSelected ? 'var(--purple)' : '#fff') + ';margin-right:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">'
+          + (isSelected ? '<div style="width:8px;height:8px;border-radius:50%;background:#fff;"></div>' : '')
+          + '</div>'
+          + '<span style="font-family:monospace;font-size:11px;font-weight:700;color:var(--navy);min-width:110px;">' + it.code + '</span>'
+          + '<span style="font-size:12px;color:var(--gray-700);flex:1;">' + it.name + '</span>'
+          + (it.amount > 0 ? '<span style="font-family:monospace;font-size:13px;font-weight:700;color:' + (isSelected ? 'var(--purple)' : 'var(--green)') + ';">$' + it.amount.toFixed(2) + '</span>' : '<span style="font-size:11px;color:var(--gray-500);">Included</span>')
+          + '</div>';
+      }).join('')
+    + '</div></div>';
+}
+
+function renderOptionalItems(pkgId, items, sel) {
+  return '<div style="margin-bottom:16px;">'
+    + '<div style="font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid var(--gray-200);">Optional Add-Ons</div>'
+    + items.map(it => {
+        const qty = sel['qty_' + it.code] !== undefined ? sel['qty_' + it.code] : 0;
+        const maxQ = it.maxQty || 10;
+        return '<div style="display:flex;align-items:center;padding:8px 12px;background:#fff;border:1px solid var(--gray-200);border-radius:4px;margin-bottom:4px;">'
+          + '<span style="font-family:monospace;font-size:11px;font-weight:700;color:var(--navy);min-width:110px;">' + it.code + '</span>'
+          + '<span style="font-size:12px;color:var(--gray-700);flex:1;">' + it.name + '</span>'
+          + (it.amount > 0 ? '<span style="font-family:monospace;font-size:12px;color:var(--green);font-weight:600;margin-right:12px;">$' + it.amount.toFixed(2) + ' ea</span>' : '')
+          + '<div style="display:flex;align-items:center;gap:6px;">'
+          + '<button data-pkgid="' + pkgId + '" data-code="' + it.code + '" data-delta="-1" data-max="' + maxQ + '" onclick="adjustQty(this.dataset.pkgid,this.dataset.code,-1,parseInt(this.dataset.max))" style="width:24px;height:24px;border:1px solid var(--gray-300);border-radius:3px;background:#fff;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;">−</button>'
+          + '<span id="qty-' + pkgId + '-' + it.code + '" style="font-family:monospace;font-weight:700;font-size:13px;min-width:24px;text-align:center;">' + qty + '</span>'
+          + '<button data-pkgid="' + pkgId + '" data-code="' + it.code + '" data-delta="1" data-max="' + maxQ + '" onclick="adjustQty(this.dataset.pkgid,this.dataset.code,1,parseInt(this.dataset.max))" style="width:24px;height:24px;border:1px solid var(--gray-300);border-radius:3px;background:#fff;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;">＋</button>'
+          + '</div>'
+          + '</div>';
+      }).join('')
+    + '</div>';
+}
+
+function renderSubPkgConfigurator(pkgId, p, sel) {
+  const coGroup = p.subPkgChooseOneGroup;
+  let html = '<div style="margin-bottom:16px;">'
+    + '<div style="font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid var(--navy);">'
+    + (coGroup ? '⊙ Choose One: ' + coGroup : 'Included Components') + '</div>';
+
+  if (coGroup) {
+    // Radio-style sub-package chooser
+    const selectedSub = sel['subpkg_' + coGroup] || null;
+    html += p.subPackageIds.map(sid => {
+      const sub = getPkg(sid);
+      if (!sub) return '';
+      const isSelected = selectedSub === sid;
+      return '<div style="margin-bottom:12px;">'
+        + '<div data-pkgid="' + pkgId + '" data-cogroup="' + coGroup + '" data-sid="' + sid + '" onclick="selectSubPkg(this.dataset.pkgid,this.dataset.cogroup,this.dataset.sid)" '
+        + 'style="display:flex;align-items:center;padding:12px 14px;border:2px solid ' + (isSelected ? 'var(--navy)' : 'var(--gray-200)') + ';'
+        + 'border-radius:6px 6px ' + (isSelected ? '0 0' : '6px 6px') + ';cursor:pointer;background:' + (isSelected ? 'var(--navy)' : '#fff') + ';transition:all 0.15s;">'
+        + '<div style="width:18px;height:18px;border-radius:50%;border:2px solid ' + (isSelected ? '#fff' : 'var(--gray-300)') + ';'
+        + 'background:' + (isSelected ? '#fff' : '#fff') + ';margin-right:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">'
+        + (isSelected ? '<div style="width:8px;height:8px;border-radius:50%;background:var(--navy);"></div>' : '')
+        + '</div>'
+        + '<span style="font-family:monospace;font-size:12px;font-weight:700;color:' + (isSelected ? '#fff' : 'var(--navy)') + ';min-width:110px;">' + sub.code + '</span>'
+        + '<span style="font-size:13px;font-weight:600;color:' + (isSelected ? '#fff' : 'var(--gray-700)') + ';flex:1;">' + sub.name + '</span>'
+        + (sub.amount > 0 ? '<span style="font-family:monospace;font-size:13px;font-weight:700;color:' + (isSelected ? '#90e0b0' : 'var(--green)') + ';">$' + sub.amount.toFixed(2) + '</span>' : '')
+        + '</div>'
+        // If selected, show sub-package items inline
+        + (isSelected ? renderSubPkgItems(pkgId, sub, sel) : '')
+        + '</div>';
+    }).join('');
+  } else {
+    // All sub-packages shown, not a choice
+    html += p.subPackageIds.map(sid => {
+      const sub = getPkg(sid);
+      if (!sub) return '';
+      return '<div style="border:1px solid var(--gray-200);border-radius:6px;margin-bottom:12px;overflow:hidden;">'
+        + '<div style="padding:10px 14px;background:var(--gray-100);border-bottom:1px solid var(--gray-200);display:flex;align-items:center;gap:8px;">'
+        + '<span style="font-family:monospace;font-weight:700;font-size:12px;color:var(--navy);">' + sub.code + '</span>'
+        + '<span style="font-size:12px;font-weight:600;color:var(--gray-700);">' + sub.name + '</span>'
+        + '</div>'
+        + '<div style="padding:10px 14px;">' + renderSubPkgItemsInner(pkgId, sub, sel) + '</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function renderSubPkgItems(parentPkgId, sub, sel) {
+  return '<div style="border:1px solid var(--navy);border-top:none;border-radius:0 0 6px 6px;padding:14px;background:#f8faff;">'
+    + renderSubPkgItemsInner(parentPkgId, sub, sel)
+    + '</div>';
+}
+
+function renderSubPkgItemsInner(parentPkgId, sub, sel) {
+  let html = '';
+  const subSel = sel['subsel_' + sub.id] || {};
+
+  // Fixed required items
+  const fixed = (sub.items || []).filter(it => it.required && !it.chooseOne);
+  if (fixed.length) {
+    html += '<div style="font-size:11px;font-weight:700;color:var(--gray-500);margin-bottom:6px;">Included</div>';
+    html += fixed.map(it =>
+      '<div style="display:flex;align-items:center;padding:6px 10px;background:#fff;border:1px solid var(--gray-200);border-radius:3px;margin-bottom:3px;">'
+      + '<span style="font-family:monospace;font-size:11px;font-weight:700;color:var(--navy);min-width:110px;">' + it.code + '</span>'
+      + '<span style="font-size:11px;color:var(--gray-700);flex:1;">' + it.name + '</span>'
+      + (it.amount > 0 ? '<span style="font-family:monospace;font-size:11px;color:var(--green);font-weight:600;">$' + it.amount.toFixed(2) + '</span>' : '<span style="font-size:10px;color:var(--gray-500);">Included</span>')
+      + '</div>'
+    ).join('');
+  }
+
+  // Choose-one groups within sub-package
+  const coGroups = {};
+  (sub.items || []).filter(it => it.chooseOne && it.coGroup).forEach(it => {
+    if (!coGroups[it.coGroup]) coGroups[it.coGroup] = [];
+    coGroups[it.coGroup].push(it);
+  });
+  Object.keys(coGroups).forEach(grp => {
+    const selectedCode = subSel['co_' + grp] || null;
+    html += '<div style="margin-top:10px;">'
+      + '<div style="font-size:11px;font-weight:700;color:var(--purple);margin-bottom:6px;">⊙ Choose One: ' + grp + '</div>'
+      + coGroups[grp].map(it => {
+          const isSel = selectedCode === it.code;
+          return '<div data-ppid="' + parentPkgId + '" data-subid="' + sub.id + '" data-grp="' + grp + '" data-code="' + it.code + '" onclick="selectSubChooseOne(this.dataset.ppid,this.dataset.subid,this.dataset.grp,this.dataset.code)" '
+            + 'style="display:flex;align-items:center;padding:8px 10px;border:2px solid ' + (isSel ? 'var(--purple)' : 'var(--gray-200)') + ';'
+            + 'border-radius:4px;cursor:pointer;background:' + (isSel ? '#f3f0ff' : '#fff') + ';margin-bottom:3px;transition:all 0.12s;">'
+            + '<div style="width:14px;height:14px;border-radius:50%;border:2px solid ' + (isSel ? 'var(--purple)' : 'var(--gray-300)') + ';'
+            + 'background:' + (isSel ? 'var(--purple)' : '#fff') + ';margin-right:10px;flex-shrink:0;"></div>'
+            + '<span style="font-family:monospace;font-size:11px;font-weight:700;min-width:110px;">' + it.code + '</span>'
+            + '<span style="font-size:11px;color:var(--gray-700);flex:1;">' + it.name + '</span>'
+            + (it.amount > 0 ? '<span style="font-family:monospace;font-size:11px;font-weight:700;color:' + (isSel ? 'var(--purple)' : 'var(--green)') + ';">$' + it.amount.toFixed(2) + '</span>' : '')
+            + '</div>';
+        }).join('')
+      + '</div>';
+  });
+
+  // Optional items
+  const optItems = (sub.items || []).filter(it => !it.required && !it.chooseOne);
+  if (optItems.length) {
+    html += '<div style="margin-top:10px;">'
+      + '<div style="font-size:11px;font-weight:700;color:var(--gray-500);margin-bottom:6px;">Optional Add-Ons</div>'
+      + optItems.map(it => {
+          const qty = subSel['qty_' + it.code] !== undefined ? subSel['qty_' + it.code] : 0;
+          return '<div style="display:flex;align-items:center;padding:6px 10px;background:#fff;border:1px solid var(--gray-200);border-radius:3px;margin-bottom:3px;">'
+            + '<span style="font-family:monospace;font-size:11px;font-weight:700;min-width:110px;">' + it.code + '</span>'
+            + '<span style="font-size:11px;flex:1;">' + it.name + '</span>'
+            + (it.amount > 0 ? '<span style="font-family:monospace;font-size:11px;color:var(--green);font-weight:600;margin-right:8px;">$' + it.amount.toFixed(2) + ' ea</span>' : '')
+            + '<div style="display:flex;align-items:center;gap:4px;">'
+            + '<button data-ppid="' + parentPkgId + '" data-subid="' + sub.id + '" data-code="' + it.code + '" data-max="' + (it.maxQty||10) + '" onclick="event.stopPropagation();adjustSubQty(this.dataset.ppid,this.dataset.subid,this.dataset.code,-1,parseInt(this.dataset.max))" style="width:20px;height:20px;border:1px solid var(--gray-300);border-radius:2px;background:#fff;cursor:pointer;font-size:12px;">−</button>'
+            + '<span id="subqty-' + sub.id + '-' + it.code + '" style="font-family:monospace;font-weight:700;font-size:12px;min-width:20px;text-align:center;">' + qty + '</span>'
+            + '<button data-ppid="' + parentPkgId + '" data-subid="' + sub.id + '" data-code="' + it.code + '" data-max="' + (it.maxQty||10) + '" onclick="event.stopPropagation();adjustSubQty(this.dataset.ppid,this.dataset.subid,this.dataset.code,1,parseInt(this.dataset.max))" style="width:20px;height:20px;border:1px solid var(--gray-300);border-radius:2px;background:#fff;cursor:pointer;font-size:12px;">＋</button>'
+            + '</div></div>';
+        }).join('')
+      + '</div>';
+  }
+  return html;
+}
+
+// ═══════════════════════════════════════════════════
+// QUOTE INTERACTION HANDLERS
+// ═══════════════════════════════════════════════════
+function selectChooseOne(pkgId, grp, code) {
+  if (!quoteState.selections[pkgId]) quoteState.selections[pkgId] = {};
+  quoteState.selections[pkgId]['co_' + grp] = code;
+  renderConfigurator(pkgId);
+  updateQuoteTotal();
+}
+
+function selectSubPkg(parentPkgId, coGroup, subPkgId) {
+  if (!quoteState.selections[parentPkgId]) quoteState.selections[parentPkgId] = {};
+  quoteState.selections[parentPkgId]['subpkg_' + coGroup] = subPkgId;
+  renderConfigurator(parentPkgId);
+  updateQuoteTotal();
+}
+
+function selectSubChooseOne(parentPkgId, subPkgId, grp, code) {
+  if (!quoteState.selections[parentPkgId]) quoteState.selections[parentPkgId] = {};
+  if (!quoteState.selections[parentPkgId]['subsel_' + subPkgId]) quoteState.selections[parentPkgId]['subsel_' + subPkgId] = {};
+  quoteState.selections[parentPkgId]['subsel_' + subPkgId]['co_' + grp] = code;
+  renderConfigurator(parentPkgId);
+  updateQuoteTotal();
+}
+
+function adjustQty(pkgId, code, delta, max) {
+  if (!quoteState.selections[pkgId]) quoteState.selections[pkgId] = {};
+  const cur = quoteState.selections[pkgId]['qty_' + code] || 0;
+  const newVal = Math.min(max, Math.max(0, cur + delta));
+  quoteState.selections[pkgId]['qty_' + code] = newVal;
+  const el = document.getElementById('qty-' + pkgId + '-' + code);
+  if (el) el.textContent = newVal;
+  updateRunningTotal(pkgId);
+  updateQuoteTotal();
+}
+
+function adjustSubQty(parentPkgId, subPkgId, code, delta, max) {
+  if (!quoteState.selections[parentPkgId]) quoteState.selections[parentPkgId] = {};
+  if (!quoteState.selections[parentPkgId]['subsel_' + subPkgId]) quoteState.selections[parentPkgId]['subsel_' + subPkgId] = {};
+  const cur = quoteState.selections[parentPkgId]['subsel_' + subPkgId]['qty_' + code] || 0;
+  const newVal = Math.min(max, Math.max(0, cur + delta));
+  quoteState.selections[parentPkgId]['subsel_' + subPkgId]['qty_' + code] = newVal;
+  const el = document.getElementById('subqty-' + subPkgId + '-' + code);
+  if (el) el.textContent = newVal;
+  updateRunningTotal(parentPkgId);
+  updateQuoteTotal();
+}
+
+// ═══════════════════════════════════════════════════
+// TOTALS
+// ═══════════════════════════════════════════════════
+function calcPkgTotal(pkgId) {
+  const p = getPkg(pkgId);
+  if (!p) return 0;
+  const sel = quoteState.selections[pkgId] || {};
+  let total = p.amount || 0;
+
+  // Fixed required items
+  (p.items || []).filter(it => it.required && !it.chooseOne).forEach(it => { total += it.amount || 0; });
+
+  // Choose-one selections
+  const coGroups = {};
+  (p.items || []).filter(it => it.chooseOne && it.coGroup).forEach(it => {
+    if (!coGroups[it.coGroup]) coGroups[it.coGroup] = [];
+    coGroups[it.coGroup].push(it);
+  });
+  Object.keys(coGroups).forEach(grp => {
+    const selCode = sel['co_' + grp];
+    const it = coGroups[grp].find(i => i.code === selCode);
+    if (it) total += it.amount || 0;
+  });
+
+  // Optional qty items
+  (p.items || []).filter(it => !it.required && !it.chooseOne).forEach(it => {
+    const qty = sel['qty_' + it.code] || 0;
+    total += qty * (it.amount || 0);
+  });
+
+  // Selected sub-package
+  if (p.subPkgChooseOneGroup) {
+    const selSubId = sel['subpkg_' + p.subPkgChooseOneGroup];
+    if (selSubId) {
+      const sub = getPkg(selSubId);
+      if (sub) {
+        const subSel = sel['subsel_' + selSubId] || {};
+        total += sub.amount || 0;
+        (sub.items || []).filter(it => it.required && !it.chooseOne).forEach(it => { total += it.amount || 0; });
+        const subCoGroups = {};
+        (sub.items || []).filter(it => it.chooseOne && it.coGroup).forEach(it => {
+          if (!subCoGroups[it.coGroup]) subCoGroups[it.coGroup] = [];
+          subCoGroups[it.coGroup].push(it);
+        });
+        Object.keys(subCoGroups).forEach(grp => {
+          const selCode = subSel['co_' + grp];
+          const it = subCoGroups[grp].find(i => i.code === selCode);
+          if (it) total += it.amount || 0;
+        });
+        (sub.items || []).filter(it => !it.required && !it.chooseOne).forEach(it => {
+          total += (subSel['qty_' + it.code] || 0) * (it.amount || 0);
+        });
+      }
+    }
+  } else {
+    p.subPackageIds.forEach(sid => {
+      const sub = getPkg(sid);
+      if (!sub) return;
+      total += sub.amount || 0;
+      (sub.items || []).filter(it => it.required && !it.chooseOne).forEach(it => { total += it.amount || 0; });
+    });
+  }
+
+  return total;
+}
+
+function updateRunningTotal(pkgId) {
+  const el = document.getElementById('pkg-running-total');
+  if (el) el.textContent = '$' + calcPkgTotal(pkgId).toFixed(2) + ' / mo';
+}
+
+function updateQuoteTotal() {
+  const total = quoteState.selectedPkgId ? calcPkgTotal(quoteState.selectedPkgId) : 0;
+  const el = document.getElementById('quote-total-bar');
+  if (el) el.textContent = 'Total: $' + total.toFixed(2) + ' / mo';
+}
+
+function generateQuote() {
+  if (!quoteState.selectedPkgId) { showToast('⚠ Please select and configure a package first.'); return; }
+  showToast('✓ Quote generated! (integration point for your quoting system)');
+}
 
 // INIT
 renderAll();
