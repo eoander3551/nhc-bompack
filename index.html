@@ -421,6 +421,11 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: #c8d4e8; color: var
       <div class="section-label">Attach Sub-Packages</div>
       <p style="font-size:11px;color:var(--gray-500);margin-bottom:8px;">Nest other packages inside this one. Per-item overrides can be set after saving via the ⚙ Overrides button.</p>
       <div class="sub-pkg-list" id="sub-pkg-list"></div>
+      <div style="margin-top:10px;display:flex;align-items:center;gap:8px;">
+        <label style="font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;">Sub-Pkg Choose-One Group</label>
+        <input type="text" id="f-subpkg-cogroup" placeholder="e.g. Edge Router (leave blank if not mutually exclusive)" style="flex:1;border:1px solid var(--gray-300);border-radius:3px;padding:6px 9px;font-size:12px;font-family:'IBM Plex Sans',sans-serif;">
+      </div>
+      <div style="font-size:11px;color:var(--gray-500);margin-top:4px;">If set, sub-packages will be shown as mutually exclusive options — customer picks one.</div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-gray" onclick="closeModal('modal-pkg')">Cancel</button>
@@ -544,7 +549,8 @@ const packages = [
     billingOverride: 'No',
     required: false, chooseOne: false,
     quoteReq: false, deliveryReq: false,
-    subPackageIds: ['pkg2'],
+    subPackageIds: ['pkg2','pkg4'],
+    subPkgChooseOneGroup: 'Edge Router',
     overrides: {},
     collapsed: false,
     parentId: null,
@@ -590,7 +596,8 @@ const packages = [
     billingOverride: 'No',
     required: false, chooseOne: false,
     quoteReq: false, deliveryReq: false,
-    subPackageIds: ['pkg2'],
+    subPackageIds: ['pkg2','pkg4'],
+    subPkgChooseOneGroup: 'Edge Router',
     overrides: {},
     collapsed: false,
     parentId: null,
@@ -601,8 +608,33 @@ const packages = [
       { id:'b4', code:'IPADRES29',name:'Static IP Address',             amount:0,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'IP Address Type', minQty:1, maxQty:1 },
       { id:'b5', code:'IPADDDHCP',name:'DHCP IP Address',               amount:0,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'IP Address Type', minQty:1, maxQty:1 },
     ]
+  },
+  {
+    id: 'pkg4',
+    code: 'UISP12R',
+    serviceType: 'Edge Router',
+    name: 'UBNT UISP - RENTAL',
+    amount: 0,
+    billingOverride: 'No',
+    required: false, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: [],
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: [
+      { id:'u1', code:'USIPSUBC',  name:'UISP CLOUD SUBSCRIPTION 3YR',      amount:0, billingOverride:'No', required:true,  chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'u2', code:'DLSMSPFR',  name:'SFP SINGLE MODE DELL - RENTAL',     amount:0, billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'u3', code:'J10GSFPER', name:'SFP JUNIPER 10G ETHERNET - RENTAL', amount:0, billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'u4', code:'JEXSPF10R', name:'JUNIPER EX-SFP-10GE-LRM',          amount:0, billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'u5', code:'SFPJUNMMFR',name:'SFP JUNIPER MMF',                   amount:0, billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'u6', code:'UBNT',      name:'UBNT RACK MOUNT',                   amount:0, billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'u7', code:'IPADRES30', name:'Static IP Address',                  amount:0, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'IP Address Type', minQty:1, maxQty:1 },
+      { id:'u8', code:'IPADRES29', name:'Static IP Address',                  amount:0, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'IP Address Type', minQty:1, maxQty:1 },
+      { id:'u9', code:'IPADDDHCP', name:'DHCP IP Address',                    amount:0, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'IP Address Type', minQty:1, maxQty:1 },
+    ]
   }
-];;
+];
 
 // ═══════════════════════════════════════════════════
 // HELPERS
@@ -880,8 +912,25 @@ function buildItemsTable(p) {
 }
 
 function buildSubPkgsSection(p) {
-  let html = '<div class="sub-pkgs-section"><div class="sub-pkgs-label">⊙ Nested Sub-Packages (' + p.subPackageIds.length + ')</div>';
-  p.subPackageIds.forEach(sid => {
+  const coGroup = p.subPkgChooseOneGroup || null;
+  let html = '<div class="sub-pkgs-section">';
+
+  // Header
+  html += '<div class="sub-pkgs-label">⊙ Nested Sub-Packages (' + p.subPackageIds.length + ')'
+        + (coGroup ? ' &nbsp;<span style="font-size:10px;background:var(--purple);color:#fff;padding:2px 8px;border-radius:3px;text-transform:none;letter-spacing:0;">⊙ Choose One: ' + coGroup + '</span>' : '')
+        + '</div>';
+
+  // If choose-one group, wrap in a visual bracket
+  if (coGroup) {
+    html += '<div style="border:2px solid var(--purple);border-radius:6px;overflow:hidden;margin:4px 0 8px;">';
+    html += '<div style="background:var(--purple);color:#fff;padding:5px 12px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:8px;">'
+          + '<span>⊙ Customer picks ONE of these ' + coGroup + ' options:</span>'
+          + '<button class="btn btn-sm" style="background:rgba(255,255,255,0.2);color:#fff;font-size:10px;padding:2px 8px;margin-left:auto;" '
+          + 'onclick="event.stopPropagation();openEditPkgModal(\'' + p.id + '\')">Change Grouping</button>'
+          + '</div>';
+  }
+
+  p.subPackageIds.forEach((sid, idx) => {
     const sub = getPkg(sid);
     if (!sub) return;
     const subItems = allSubItems(sid);
@@ -889,8 +938,15 @@ function buildSubPkgsSection(p) {
       const ov = ((p.overrides || {})[it.fromPkgId] || {})[it.code] || {};
       return ov.hidden;
     });
+
+    // Divider between choose-one options
+    if (coGroup && idx > 0) {
+      html += '<div style="display:flex;align-items:center;gap:8px;padding:4px 12px;background:#f0ebff;border-top:1px solid #d8cff0;border-bottom:1px solid #d8cff0;">'
+            + '<span style="font-size:10px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:0.5px;">— OR —</span>'
+            + '</div>';
+    }
+
     const subCard = buildPkgCard(sub, 1);
-    // Inject deactivated banner into the card if needed
     if (deactivated.length) {
       const div = document.createElement('div');
       div.innerHTML = subCard.outerHTML;
@@ -904,11 +960,11 @@ function buildSubPkgsSection(p) {
         html += div.innerHTML;
         return;
       }
-      html += subCard.outerHTML;
-    } else {
-      html += subCard.outerHTML;
     }
+    html += subCard.outerHTML;
   });
+
+  if (coGroup) html += '</div>'; // close choose-one bracket
   html += '</div>';
   return html;
 }
@@ -970,6 +1026,7 @@ function fillPkgForm(p) {
   document.getElementById('f-name').value     = p ? p.name : '';
   document.getElementById('f-amount').value   = p ? p.amount : 0;
   document.getElementById('f-billovr').value  = p ? p.billingOverride : 'No';
+  document.getElementById('f-subpkg-cogroup').value = p ? (p.subPkgChooseOneGroup || '') : '';
   document.getElementById('f-required').checked  = p ? p.required  : false;
   document.getElementById('f-chooseone').checked = p ? p.chooseOne : false;
   document.getElementById('f-quotereq').checked  = p ? p.quoteReq  : false;
@@ -1022,6 +1079,7 @@ function savePkg() {
     p.amount         = parseFloat(document.getElementById('f-amount').value) || 0;
     p.billingOverride= document.getElementById('f-billovr').value;
     p.serviceType    = document.getElementById('f-servicetype').value;
+    p.subPkgChooseOneGroup = document.getElementById('f-subpkg-cogroup').value.trim() || null;
     p.required       = document.getElementById('f-required').checked;
     p.chooseOne      = document.getElementById('f-chooseone').checked;
     p.quoteReq       = document.getElementById('f-quotereq').checked;
@@ -1038,6 +1096,7 @@ function savePkg() {
       amount: parseFloat(document.getElementById('f-amount').value) || 0,
       billingOverride: document.getElementById('f-billovr').value,
       serviceType: document.getElementById('f-servicetype').value,
+      subPkgChooseOneGroup: document.getElementById('f-subpkg-cogroup').value.trim() || null,
       required:    document.getElementById('f-required').checked,
       chooseOne:   document.getElementById('f-chooseone').checked,
       quoteReq:    document.getElementById('f-quotereq').checked,
