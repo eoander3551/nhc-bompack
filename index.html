@@ -482,6 +482,12 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: #c8d4e8; color: var
           <label>Choose-One Group (leave blank if not part of a group)</label>
           <input type="text" id="fi-cogroup" placeholder="e.g. IP Address Type">
         </div>
+        <div class="form-group full">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="fi-isdefault" style="width:16px;height:16px;">
+            <span>Default selection in Choose-One group <span style="font-weight:400;color:var(--gray-500)">(pre-selected when customer sees the quote)</span></span>
+          </label>
+        </div>
         <div class="form-group">
           <label>Min Qty</label>
           <input type="number" id="fi-minqty" value="1" min="0">
@@ -749,7 +755,7 @@ const packages = [
       { id:'r4d', code:'BLP150LIC',  name:'Bigleaf Premier Bandwidth License 150Mbps',  amount:153.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Bandwidth License', minQty:1, maxQty:1 },
       { id:'r4e', code:'BLP300LIC',  name:'Bigleaf Premier Bandwidth License 300Mbps',  amount:192.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Bandwidth License', minQty:1, maxQty:1 },
       { id:'r4f', code:'BLP500LIC',  name:'Bigleaf Premier Bandwidth License 500Mbps',  amount:307.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Bandwidth License', minQty:1, maxQty:1 },
-      { id:'r4g', code:'BL1G100LIC', name:'Bigleaf Premier Bandwidth License 1G/100M',  amount:333.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Bandwidth License', minQty:1, maxQty:1 },
+      { id:'r4g', code:'BLP1G100LIC', name:'Bigleaf Premier Bandwidth License 1G/100M',  amount:333.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Bandwidth License', minQty:1, maxQty:1 },
     ]
   },
   {
@@ -769,11 +775,537 @@ const packages = [
     items: [
       { id:'r1a', code:'BLR112R-A',  name:'Bigleaf 112 Router Rental (Unit A)', amount:13.95,  billingOverride:'No', required:true,  chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
       { id:'r1b', code:'BLR112R-B',  name:'Bigleaf 112 Router Rental (Unit B)', amount:13.95,  billingOverride:'No', required:true,  chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
-      { id:'r1c', code:'BL1000LIC',  name:'Bigleaf Bandwidth License 1000Mbps', amount:179.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Bandwidth License', minQty:1, maxQty:1 },
-      { id:'r1d', code:'BL2000LIC',  name:'Bigleaf Bandwidth License 2000Mbps', amount:384.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Bandwidth License', minQty:1, maxQty:1 },
-      { id:'r1e', code:'BL3000LIC',  name:'Bigleaf Bandwidth License 3000Mbps', amount:576.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Bandwidth License', minQty:1, maxQty:1 },
-      { id:'r1f', code:'BLREX1GR',   name:'Bigleaf 4-port Expansion Card (Unit A)', amount:11.95, billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:1 },
-      { id:'r1g', code:'BLREX10GR',  name:'Bigleaf 4-port Expansion Card (Unit B)', amount:11.95, billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:1 },
+      { id:'r1c', code:'BLP1000LIC',  name:'Bigleaf Premier Bandwidth License 1000Mbps', amount:358.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Bandwidth License', minQty:1, maxQty:1 },
+      { id:'r1d', code:'BLP2000LIC',  name:'Bigleaf Premier Bandwidth License 2000Mbps', amount:576.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Bandwidth License', minQty:1, maxQty:1 },
+      { id:'r1e', code:'BLP3000LIC',  name:'Bigleaf Premier Bandwidth License 3000Mbps', amount:897.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Bandwidth License', minQty:1, maxQty:1 },
+      { id:'r1f', code:'BLREX1GR',   name:'Bigleaf 4-port Expansion Card (Unit A)', amount:11.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Expansion Card', minQty:1, maxQty:1 },
+      { id:'r1g', code:'BLREX10GR',  name:'Bigleaf 4-port Expansion Card (Unit B)', amount:11.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Expansion Card', minQty:1, maxQty:1 },
+    ]
+  },
+  {
+    id: 'pkg8',
+    internal: false,
+    code: 'MGDBLPREHA2',
+    serviceType: 'SD-WAN',
+    name: 'Managed Bigleaf High Availability 2',
+    amount: 49.95,
+    billingOverride: 'No',
+    required: true, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: ['sp1', 'sp2', 'sp3', 'sp4', 'sp5', 'sp6', 'sp7', 'sp8'],
+    subPkgChooseOneGroup: 'Bandwidth Tier',
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: []
+  },
+  {
+    id: 'sp1',
+    internal: true,
+    code: 'BLP75LIC',
+    serviceType: 'SD-WAN',
+    name: 'Bigleaf Premier Bandwidth License 75Mbps',
+    amount: 128.95,
+    billingOverride: 'No',
+    required: true, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: [],
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: [
+      { id:'pal', code:'BLP75LIC', name:'Bigleaf Premier Bandwidth License 75Mbps', amount:128.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'par1', code:'BLR400R-A', name:'Bigleaf 400 Router Rental (Unit A)', amount:6.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'par2', code:'BLR400R-B', name:'Bigleaf 400 Router Rental (Unit B)', amount:6.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pau1', code:'U8PRTLTR-A', name:'Ubiquiti 8PORT Lite 4PoE 4NON - RENTAL (Unit A)', amount:4.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pau2', code:'U8PRTLTR-B', name:'Ubiquiti 8PORT Lite 4PoE 4NON - RENTAL (Unit B)', amount:4.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'paip1', code:'BLIPADR29', name:'Bigleaf 5 Public IP /29',   amount:19.95,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'paip2', code:'BLIPADR28', name:'Bigleaf 13 Public IP /28',  amount:64.95,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'paip3', code:'BLIPADR27', name:'Bigleaf 29 Public IP /27',  amount:128.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'paip4', code:'BLIPADR26', name:'Bigleaf 61 Public IP /26',  amount:256.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'pas1', code:'BL112SFPR',  name:'Bigleaf SFP+ Optic Module 10G BASE-SR', amount:3.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pas2', code:'BLSFP1GMR',  name:'SFP Bigleaf 1G MMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pas3', code:'BLSFP1GSR',  name:'SFP Bigleaf 1G SMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pas4', code:'BLSFP10GSR', name:'SFP Bigleaf 10G SMF - Rental',          amount:1.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pas5', code:'BLSFP10GMR', name:'SFP Bigleaf 10G MMF - Rental',          amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 }
+    ]
+  },
+  {
+    id: 'sp2',
+    internal: true,
+    code: 'BLP150LIC',
+    serviceType: 'SD-WAN',
+    name: 'Bigleaf Premier Bandwidth License 150Mbps',
+    amount: 153.95,
+    billingOverride: 'No',
+    required: true, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: [],
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: [
+      { id:'pbl', code:'BLP150LIC', name:'Bigleaf Premier Bandwidth License 150Mbps', amount:153.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pbr1', code:'BLR400R-A', name:'Bigleaf 400 Router Rental (Unit A)', amount:6.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pbr2', code:'BLR400R-B', name:'Bigleaf 400 Router Rental (Unit B)', amount:6.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pbu1', code:'U8PRTLTR-A', name:'Ubiquiti 8PORT Lite 4PoE 4NON - RENTAL (Unit A)', amount:4.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pbu2', code:'U8PRTLTR-B', name:'Ubiquiti 8PORT Lite 4PoE 4NON - RENTAL (Unit B)', amount:4.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pbip1', code:'BLIPADR29', name:'Bigleaf 5 Public IP /29',   amount:19.95,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'pbip2', code:'BLIPADR28', name:'Bigleaf 13 Public IP /28',  amount:64.95,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'pbip3', code:'BLIPADR27', name:'Bigleaf 29 Public IP /27',  amount:128.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'pbip4', code:'BLIPADR26', name:'Bigleaf 61 Public IP /26',  amount:256.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'pbs1', code:'BL112SFPR',  name:'Bigleaf SFP+ Optic Module 10G BASE-SR', amount:3.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pbs2', code:'BLSFP1GMR',  name:'SFP Bigleaf 1G MMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pbs3', code:'BLSFP1GSR',  name:'SFP Bigleaf 1G SMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pbs4', code:'BLSFP10GSR', name:'SFP Bigleaf 10G SMF - Rental',          amount:1.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pbs5', code:'BLSFP10GMR', name:'SFP Bigleaf 10G MMF - Rental',          amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 }
+    ]
+  },
+  {
+    id: 'sp3',
+    internal: true,
+    code: 'BLP300LIC',
+    serviceType: 'SD-WAN',
+    name: 'Bigleaf Premier Bandwidth License 300Mbps',
+    amount: 192.95,
+    billingOverride: 'No',
+    required: true, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: [],
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: [
+      { id:'pcl', code:'BLP300LIC', name:'Bigleaf Premier Bandwidth License 300Mbps', amount:192.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pcr1', code:'BLR400R-A', name:'Bigleaf 400 Router Rental (Unit A)', amount:6.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pcr2', code:'BLR400R-B', name:'Bigleaf 400 Router Rental (Unit B)', amount:6.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pcu1', code:'U8PRTLTR-A', name:'Ubiquiti 8PORT Lite 4PoE 4NON - RENTAL (Unit A)', amount:4.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pcu2', code:'U8PRTLTR-B', name:'Ubiquiti 8PORT Lite 4PoE 4NON - RENTAL (Unit B)', amount:4.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pcip1', code:'BLIPADR29', name:'Bigleaf 5 Public IP /29',   amount:19.95,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'pcip2', code:'BLIPADR28', name:'Bigleaf 13 Public IP /28',  amount:64.95,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'pcip3', code:'BLIPADR27', name:'Bigleaf 29 Public IP /27',  amount:128.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'pcip4', code:'BLIPADR26', name:'Bigleaf 61 Public IP /26',  amount:256.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'pcs1', code:'BL112SFPR',  name:'Bigleaf SFP+ Optic Module 10G BASE-SR', amount:3.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pcs2', code:'BLSFP1GMR',  name:'SFP Bigleaf 1G MMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pcs3', code:'BLSFP1GSR',  name:'SFP Bigleaf 1G SMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pcs4', code:'BLSFP10GSR', name:'SFP Bigleaf 10G SMF - Rental',          amount:1.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pcs5', code:'BLSFP10GMR', name:'SFP Bigleaf 10G MMF - Rental',          amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 }
+    ]
+  },
+  {
+    id: 'sp4',
+    internal: true,
+    code: 'BLP500LIC',
+    serviceType: 'SD-WAN',
+    name: 'Bigleaf Premier Bandwidth License 500Mbps',
+    amount: 307.95,
+    billingOverride: 'No',
+    required: true, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: [],
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: [
+      { id:'pdl', code:'BLP500LIC', name:'Bigleaf Premier Bandwidth License 500Mbps', amount:307.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pdr1', code:'BLR400R-A', name:'Bigleaf 400 Router Rental (Unit A)', amount:6.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pdr2', code:'BLR400R-B', name:'Bigleaf 400 Router Rental (Unit B)', amount:6.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pdu1', code:'U8PRTLTR-A', name:'Ubiquiti 8PORT Lite 4PoE 4NON - RENTAL (Unit A)', amount:4.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pdu2', code:'U8PRTLTR-B', name:'Ubiquiti 8PORT Lite 4PoE 4NON - RENTAL (Unit B)', amount:4.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pdip1', code:'BLIPADR29', name:'Bigleaf 5 Public IP /29',   amount:19.95,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'pdip2', code:'BLIPADR28', name:'Bigleaf 13 Public IP /28',  amount:64.95,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'pdip3', code:'BLIPADR27', name:'Bigleaf 29 Public IP /27',  amount:128.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'pdip4', code:'BLIPADR26', name:'Bigleaf 61 Public IP /26',  amount:256.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'pds1', code:'BL112SFPR',  name:'Bigleaf SFP+ Optic Module 10G BASE-SR', amount:3.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pds2', code:'BLSFP1GMR',  name:'SFP Bigleaf 1G MMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pds3', code:'BLSFP1GSR',  name:'SFP Bigleaf 1G SMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pds4', code:'BLSFP10GSR', name:'SFP Bigleaf 10G SMF - Rental',          amount:1.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pds5', code:'BLSFP10GMR', name:'SFP Bigleaf 10G MMF - Rental',          amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 }
+    ]
+  },
+  {
+    id: 'sp5',
+    internal: true,
+    code: 'BLP1G100LIC',
+    serviceType: 'SD-WAN',
+    name: 'Bigleaf Premier Bandwidth License 1G/100Mbps',
+    amount: 333.95,
+    billingOverride: 'No',
+    required: true, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: [],
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: [
+      { id:'pel', code:'BLP1G100LIC', name:'Bigleaf Premier Bandwidth License 1G/100Mbps', amount:333.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'per1', code:'BLR400R-A', name:'Bigleaf 400 Router Rental (Unit A)', amount:6.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'per2', code:'BLR400R-B', name:'Bigleaf 400 Router Rental (Unit B)', amount:6.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'peu1', code:'U8PRTLTR-A', name:'Ubiquiti 8PORT Lite 4PoE 4NON - RENTAL (Unit A)', amount:4.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'peu2', code:'U8PRTLTR-B', name:'Ubiquiti 8PORT Lite 4PoE 4NON - RENTAL (Unit B)', amount:4.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'peip1', code:'BLIPADR29', name:'Bigleaf 5 Public IP /29',   amount:19.95,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'peip2', code:'BLIPADR28', name:'Bigleaf 13 Public IP /28',  amount:64.95,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'peip3', code:'BLIPADR27', name:'Bigleaf 29 Public IP /27',  amount:128.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'peip4', code:'BLIPADR26', name:'Bigleaf 61 Public IP /26',  amount:256.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'pes1', code:'BL112SFPR',  name:'Bigleaf SFP+ Optic Module 10G BASE-SR', amount:3.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pes2', code:'BLSFP1GMR',  name:'SFP Bigleaf 1G MMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pes3', code:'BLSFP1GSR',  name:'SFP Bigleaf 1G SMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pes4', code:'BLSFP10GSR', name:'SFP Bigleaf 10G SMF - Rental',          amount:1.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pes5', code:'BLSFP10GMR', name:'SFP Bigleaf 10G MMF - Rental',          amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 }
+    ]
+  },
+  {
+    id: 'sp6',
+    internal: true,
+    code: 'BLP1000LIC',
+    serviceType: 'SD-WAN',
+    name: 'Bigleaf Premier Bandwidth License 1000Mbps',
+    amount: 358.95,
+    billingOverride: 'No',
+    required: true, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: [],
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: [
+      { id:'pfl', code:'BLP1000LIC', name:'Bigleaf Premier Bandwidth License 1000Mbps', amount:358.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pfr1', code:'BLR112R-A', name:'Bigleaf 112 Router Rental (Unit A)', amount:13.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pfr2', code:'BLR112R-B', name:'Bigleaf 112 Router Rental (Unit B)', amount:13.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pfu1', code:'U8PRTLTR-A', name:'Ubiquiti 8PORT Lite 4PoE 4NON - RENTAL (Unit A)', amount:4.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pfu2', code:'U8PRTLTR-B', name:'Ubiquiti 8PORT Lite 4PoE 4NON - RENTAL (Unit B)', amount:4.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pfip1', code:'BLIPADR29', name:'Bigleaf 5 Public IP /29',   amount:19.95,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'pfip2', code:'BLIPADR28', name:'Bigleaf 13 Public IP /28',  amount:64.95,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'pfip3', code:'BLIPADR27', name:'Bigleaf 29 Public IP /27',  amount:128.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'pfip4', code:'BLIPADR26', name:'Bigleaf 61 Public IP /26',  amount:256.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'pfs1', code:'BL112SFPR',  name:'Bigleaf SFP+ Optic Module 10G BASE-SR', amount:3.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pfs2', code:'BLSFP1GMR',  name:'SFP Bigleaf 1G MMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pfs3', code:'BLSFP1GSR',  name:'SFP Bigleaf 1G SMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pfs4', code:'BLSFP10GSR', name:'SFP Bigleaf 10G SMF - Rental',          amount:1.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pfs5', code:'BLSFP10GMR', name:'SFP Bigleaf 10G MMF - Rental',          amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pfe1', code:'BLREX1GR',  name:'Bigleaf 4-port Expansion Card (Unit A)', amount:11.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Expansion Card', minQty:1, maxQty:1 },
+      { id:'pfe2', code:'BLREX10GR', name:'Bigleaf 4-port Expansion Card (Unit B)', amount:11.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Expansion Card', minQty:1, maxQty:1 }
+    ]
+  },
+  {
+    id: 'sp7',
+    internal: true,
+    code: 'BLP2000LIC',
+    serviceType: 'SD-WAN',
+    name: 'Bigleaf Premier Bandwidth License 2000Mbps',
+    amount: 576.95,
+    billingOverride: 'No',
+    required: true, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: [],
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: [
+      { id:'pgl', code:'BLP2000LIC', name:'Bigleaf Premier Bandwidth License 2000Mbps', amount:576.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pgr1', code:'BLR112R-A', name:'Bigleaf 112 Router Rental (Unit A)', amount:13.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pgr2', code:'BLR112R-B', name:'Bigleaf 112 Router Rental (Unit B)', amount:13.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pgu1', code:'U8PRTLTR-A', name:'Ubiquiti 8PORT Lite 4PoE 4NON - RENTAL (Unit A)', amount:4.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pgu2', code:'U8PRTLTR-B', name:'Ubiquiti 8PORT Lite 4PoE 4NON - RENTAL (Unit B)', amount:4.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'pgip1', code:'BLIPADR29', name:'Bigleaf 5 Public IP /29',   amount:19.95,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'pgip2', code:'BLIPADR28', name:'Bigleaf 13 Public IP /28',  amount:64.95,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'pgip3', code:'BLIPADR27', name:'Bigleaf 29 Public IP /27',  amount:128.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'pgip4', code:'BLIPADR26', name:'Bigleaf 61 Public IP /26',  amount:256.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'pgs1', code:'BL112SFPR',  name:'Bigleaf SFP+ Optic Module 10G BASE-SR', amount:3.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pgs2', code:'BLSFP1GMR',  name:'SFP Bigleaf 1G MMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pgs3', code:'BLSFP1GSR',  name:'SFP Bigleaf 1G SMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pgs4', code:'BLSFP10GSR', name:'SFP Bigleaf 10G SMF - Rental',          amount:1.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pgs5', code:'BLSFP10GMR', name:'SFP Bigleaf 10G MMF - Rental',          amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'pge1', code:'BLREX1GR',  name:'Bigleaf 4-port Expansion Card (Unit A)', amount:11.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Expansion Card', minQty:1, maxQty:1 },
+      { id:'pge2', code:'BLREX10GR', name:'Bigleaf 4-port Expansion Card (Unit B)', amount:11.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Expansion Card', minQty:1, maxQty:1 }
+    ]
+  },
+  {
+    id: 'sp8',
+    internal: true,
+    code: 'BLP3000LIC',
+    serviceType: 'SD-WAN',
+    name: 'Bigleaf Premier Bandwidth License 3000Mbps',
+    amount: 897.95,
+    billingOverride: 'No',
+    required: true, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: [],
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: [
+      { id:'phl', code:'BLP3000LIC', name:'Bigleaf Premier Bandwidth License 3000Mbps', amount:897.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'phr1', code:'BLR112R-A', name:'Bigleaf 112 Router Rental (Unit A)', amount:13.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'phr2', code:'BLR112R-B', name:'Bigleaf 112 Router Rental (Unit B)', amount:13.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'phu1', code:'U8PRTLTR-A', name:'Ubiquiti 8PORT Lite 4PoE 4NON - RENTAL (Unit A)', amount:4.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'phu2', code:'U8PRTLTR-B', name:'Ubiquiti 8PORT Lite 4PoE 4NON - RENTAL (Unit B)', amount:4.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'phip1', code:'BLIPADR29', name:'Bigleaf 5 Public IP /29',   amount:19.95,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'phip2', code:'BLIPADR28', name:'Bigleaf 13 Public IP /28',  amount:64.95,  billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'phip3', code:'BLIPADR27', name:'Bigleaf 29 Public IP /27',  amount:128.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'phip4', code:'BLIPADR26', name:'Bigleaf 61 Public IP /26',  amount:256.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'phs1', code:'BL112SFPR',  name:'Bigleaf SFP+ Optic Module 10G BASE-SR', amount:3.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'phs2', code:'BLSFP1GMR',  name:'SFP Bigleaf 1G MMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'phs3', code:'BLSFP1GSR',  name:'SFP Bigleaf 1G SMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'phs4', code:'BLSFP10GSR', name:'SFP Bigleaf 10G SMF - Rental',          amount:1.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'phs5', code:'BLSFP10GMR', name:'SFP Bigleaf 10G MMF - Rental',          amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'phe1', code:'BLREX1GR',  name:'Bigleaf 4-port Expansion Card (Unit A)', amount:11.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Expansion Card', minQty:1, maxQty:1 },
+      { id:'phe2', code:'BLREX10GR', name:'Bigleaf 4-port Expansion Card (Unit B)', amount:11.95, billingOverride:'No', required:true,  chooseOne:true,  quoteReq:false, deliveryReq:false, coGroup:'Expansion Card', minQty:1, maxQty:1 }
+    ]
+  },
+  {
+    id: 'pkg9',
+    internal: false,
+    code: 'MGDBLESS',
+    serviceType: 'SD-WAN',
+    name: 'Managed Bigleaf Single Device',
+    amount: 29.95,
+    billingOverride: 'No',
+    required: true, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: ['ss1', 'ss2', 'ss3', 'ss4', 'ss5', 'ss6', 'ss7', 'ss8'],
+    subPkgChooseOneGroup: 'Bandwidth Tier',
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: []
+  },
+  {
+    id: 'ss1',
+    internal: true,
+    code: 'BL75LIC',
+    serviceType: 'SD-WAN',
+    name: 'Bigleaf Bandwidth License 75Mbps',
+    amount: 64.95,
+    billingOverride: 'No',
+    required: true, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: [],
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: [
+      { id:'sal',  code:'BL75LIC', name:'Bigleaf Bandwidth License 75Mbps', amount:64.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'sar1', code:'BLR400R', name:'Bigleaf 400 Router Rental', amount:6.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'saip0', code:'BLIPADR30', name:'Bigleaf 1 Public IP /30', amount:2.95,   billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1, isDefault:true },
+      { id:'saip1', code:'BLIPADR29', name:'Bigleaf 5 Public IP /29',  amount:19.95,  billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'saip2', code:'BLIPADR28', name:'Bigleaf 13 Public IP /28', amount:64.95,  billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'saip3', code:'BLIPADR27', name:'Bigleaf 29 Public IP /27', amount:128.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'saip4', code:'BLIPADR26', name:'Bigleaf 61 Public IP /26', amount:256.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'sas1', code:'BL112SFPR',  name:'Bigleaf SFP+ Optic Module 10G BASE-SR', amount:3.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'sas2', code:'BLSFP1GMR',  name:'SFP Bigleaf 1G MMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'sas3', code:'BLSFP1GSR',  name:'SFP Bigleaf 1G SMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'sas4', code:'BLSFP10GSR', name:'SFP Bigleaf 10G SMF - Rental',          amount:1.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'sas5', code:'BLSFP10GMR', name:'SFP Bigleaf 10G MMF - Rental',          amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 }
+    ]
+  },
+  {
+    id: 'ss2',
+    internal: true,
+    code: 'BL150LIC',
+    serviceType: 'SD-WAN',
+    name: 'Bigleaf Bandwidth License 150Mbps',
+    amount: 76.95,
+    billingOverride: 'No',
+    required: true, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: [],
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: [
+      { id:'sbl',  code:'BL150LIC', name:'Bigleaf Bandwidth License 150Mbps', amount:76.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'sbr1', code:'BLR400R', name:'Bigleaf 400 Router Rental', amount:6.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'sbip0', code:'BLIPADR30', name:'Bigleaf 1 Public IP /30', amount:2.95,   billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1, isDefault:true },
+      { id:'sbip1', code:'BLIPADR29', name:'Bigleaf 5 Public IP /29',  amount:19.95,  billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'sbip2', code:'BLIPADR28', name:'Bigleaf 13 Public IP /28', amount:64.95,  billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'sbip3', code:'BLIPADR27', name:'Bigleaf 29 Public IP /27', amount:128.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'sbip4', code:'BLIPADR26', name:'Bigleaf 61 Public IP /26', amount:256.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'sbs1', code:'BL112SFPR',  name:'Bigleaf SFP+ Optic Module 10G BASE-SR', amount:3.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'sbs2', code:'BLSFP1GMR',  name:'SFP Bigleaf 1G MMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'sbs3', code:'BLSFP1GSR',  name:'SFP Bigleaf 1G SMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'sbs4', code:'BLSFP10GSR', name:'SFP Bigleaf 10G SMF - Rental',          amount:1.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'sbs5', code:'BLSFP10GMR', name:'SFP Bigleaf 10G MMF - Rental',          amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 }
+    ]
+  },
+  {
+    id: 'ss3',
+    internal: true,
+    code: 'BL300LIC',
+    serviceType: 'SD-WAN',
+    name: 'Bigleaf Bandwidth License 300Mbps',
+    amount: 96.95,
+    billingOverride: 'No',
+    required: true, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: [],
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: [
+      { id:'scl',  code:'BL300LIC', name:'Bigleaf Bandwidth License 300Mbps', amount:96.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'scr1', code:'BLR400R', name:'Bigleaf 400 Router Rental', amount:6.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'scip0', code:'BLIPADR30', name:'Bigleaf 1 Public IP /30', amount:2.95,   billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1, isDefault:true },
+      { id:'scip1', code:'BLIPADR29', name:'Bigleaf 5 Public IP /29',  amount:19.95,  billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'scip2', code:'BLIPADR28', name:'Bigleaf 13 Public IP /28', amount:64.95,  billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'scip3', code:'BLIPADR27', name:'Bigleaf 29 Public IP /27', amount:128.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'scip4', code:'BLIPADR26', name:'Bigleaf 61 Public IP /26', amount:256.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'scs1', code:'BL112SFPR',  name:'Bigleaf SFP+ Optic Module 10G BASE-SR', amount:3.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'scs2', code:'BLSFP1GMR',  name:'SFP Bigleaf 1G MMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'scs3', code:'BLSFP1GSR',  name:'SFP Bigleaf 1G SMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'scs4', code:'BLSFP10GSR', name:'SFP Bigleaf 10G SMF - Rental',          amount:1.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'scs5', code:'BLSFP10GMR', name:'SFP Bigleaf 10G MMF - Rental',          amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 }
+    ]
+  },
+  {
+    id: 'ss4',
+    internal: true,
+    code: 'BL500LIC',
+    serviceType: 'SD-WAN',
+    name: 'Bigleaf Bandwidth License 500Mbps',
+    amount: 153.95,
+    billingOverride: 'No',
+    required: true, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: [],
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: [
+      { id:'sdl',  code:'BL500LIC', name:'Bigleaf Bandwidth License 500Mbps', amount:153.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'sdr1', code:'BLR400R', name:'Bigleaf 400 Router Rental', amount:6.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'sdip0', code:'BLIPADR30', name:'Bigleaf 1 Public IP /30', amount:2.95,   billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1, isDefault:true },
+      { id:'sdip1', code:'BLIPADR29', name:'Bigleaf 5 Public IP /29',  amount:19.95,  billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'sdip2', code:'BLIPADR28', name:'Bigleaf 13 Public IP /28', amount:64.95,  billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'sdip3', code:'BLIPADR27', name:'Bigleaf 29 Public IP /27', amount:128.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'sdip4', code:'BLIPADR26', name:'Bigleaf 61 Public IP /26', amount:256.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'sds1', code:'BL112SFPR',  name:'Bigleaf SFP+ Optic Module 10G BASE-SR', amount:3.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'sds2', code:'BLSFP1GMR',  name:'SFP Bigleaf 1G MMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'sds3', code:'BLSFP1GSR',  name:'SFP Bigleaf 1G SMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'sds4', code:'BLSFP10GSR', name:'SFP Bigleaf 10G SMF - Rental',          amount:1.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'sds5', code:'BLSFP10GMR', name:'SFP Bigleaf 10G MMF - Rental',          amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 }
+    ]
+  },
+  {
+    id: 'ss5',
+    internal: true,
+    code: 'BL1G100LIC',
+    serviceType: 'SD-WAN',
+    name: 'Bigleaf Bandwidth License 1G/100Mbps',
+    amount: 166.95,
+    billingOverride: 'No',
+    required: true, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: [],
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: [
+      { id:'sel',  code:'BL1G100LIC', name:'Bigleaf Bandwidth License 1G/100Mbps', amount:166.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'ser1', code:'BLR400R', name:'Bigleaf 400 Router Rental', amount:6.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'seip0', code:'BLIPADR30', name:'Bigleaf 1 Public IP /30', amount:2.95,   billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1, isDefault:true },
+      { id:'seip1', code:'BLIPADR29', name:'Bigleaf 5 Public IP /29',  amount:19.95,  billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'seip2', code:'BLIPADR28', name:'Bigleaf 13 Public IP /28', amount:64.95,  billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'seip3', code:'BLIPADR27', name:'Bigleaf 29 Public IP /27', amount:128.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'seip4', code:'BLIPADR26', name:'Bigleaf 61 Public IP /26', amount:256.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'ses1', code:'BL112SFPR',  name:'Bigleaf SFP+ Optic Module 10G BASE-SR', amount:3.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'ses2', code:'BLSFP1GMR',  name:'SFP Bigleaf 1G MMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'ses3', code:'BLSFP1GSR',  name:'SFP Bigleaf 1G SMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'ses4', code:'BLSFP10GSR', name:'SFP Bigleaf 10G SMF - Rental',          amount:1.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'ses5', code:'BLSFP10GMR', name:'SFP Bigleaf 10G MMF - Rental',          amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 }
+    ]
+  },
+  {
+    id: 'ss6',
+    internal: true,
+    code: 'BL1000LIC',
+    serviceType: 'SD-WAN',
+    name: 'Bigleaf Bandwidth License 1000Mbps',
+    amount: 179.95,
+    billingOverride: 'No',
+    required: true, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: [],
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: [
+      { id:'sfl',  code:'BL1000LIC', name:'Bigleaf Bandwidth License 1000Mbps', amount:179.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'sfr1', code:'BLR112R', name:'Bigleaf 112 Router Rental', amount:13.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'sfip0', code:'BLIPADR30', name:'Bigleaf 1 Public IP /30', amount:2.95,   billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1, isDefault:true },
+      { id:'sfip1', code:'BLIPADR29', name:'Bigleaf 5 Public IP /29',  amount:19.95,  billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'sfip2', code:'BLIPADR28', name:'Bigleaf 13 Public IP /28', amount:64.95,  billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'sfip3', code:'BLIPADR27', name:'Bigleaf 29 Public IP /27', amount:128.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'sfip4', code:'BLIPADR26', name:'Bigleaf 61 Public IP /26', amount:256.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'sfs1', code:'BL112SFPR',  name:'Bigleaf SFP+ Optic Module 10G BASE-SR', amount:3.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'sfs2', code:'BLSFP1GMR',  name:'SFP Bigleaf 1G MMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'sfs3', code:'BLSFP1GSR',  name:'SFP Bigleaf 1G SMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'sfs4', code:'BLSFP10GSR', name:'SFP Bigleaf 10G SMF - Rental',          amount:1.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'sfs5', code:'BLSFP10GMR', name:'SFP Bigleaf 10G MMF - Rental',          amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'sfe1', code:'BLREX1GR',  name:'Bigleaf 4-port Expansion Card (Unit A)', amount:11.95, billingOverride:'No', required:false, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Expansion Card', minQty:0, maxQty:1 },
+      { id:'sfe2', code:'BLREX10GR', name:'Bigleaf 4-port Expansion Card (Unit B)', amount:11.95, billingOverride:'No', required:false, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Expansion Card', minQty:0, maxQty:1 }
+    ]
+  },
+  {
+    id: 'ss7',
+    internal: true,
+    code: 'BL2000LIC',
+    serviceType: 'SD-WAN',
+    name: 'Bigleaf Bandwidth License 2000Mbps',
+    amount: 384.95,
+    billingOverride: 'No',
+    required: true, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: [],
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: [
+      { id:'sgl',  code:'BL2000LIC', name:'Bigleaf Bandwidth License 2000Mbps', amount:384.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'sgr1', code:'BLR112R', name:'Bigleaf 112 Router Rental', amount:13.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'sgip0', code:'BLIPADR30', name:'Bigleaf 1 Public IP /30', amount:2.95,   billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1, isDefault:true },
+      { id:'sgip1', code:'BLIPADR29', name:'Bigleaf 5 Public IP /29',  amount:19.95,  billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'sgip2', code:'BLIPADR28', name:'Bigleaf 13 Public IP /28', amount:64.95,  billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'sgip3', code:'BLIPADR27', name:'Bigleaf 29 Public IP /27', amount:128.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'sgip4', code:'BLIPADR26', name:'Bigleaf 61 Public IP /26', amount:256.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'sgs1', code:'BL112SFPR',  name:'Bigleaf SFP+ Optic Module 10G BASE-SR', amount:3.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'sgs2', code:'BLSFP1GMR',  name:'SFP Bigleaf 1G MMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'sgs3', code:'BLSFP1GSR',  name:'SFP Bigleaf 1G SMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'sgs4', code:'BLSFP10GSR', name:'SFP Bigleaf 10G SMF - Rental',          amount:1.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'sgs5', code:'BLSFP10GMR', name:'SFP Bigleaf 10G MMF - Rental',          amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'sge1', code:'BLREX1GR',  name:'Bigleaf 4-port Expansion Card (Unit A)', amount:11.95, billingOverride:'No', required:false, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Expansion Card', minQty:0, maxQty:1 },
+      { id:'sge2', code:'BLREX10GR', name:'Bigleaf 4-port Expansion Card (Unit B)', amount:11.95, billingOverride:'No', required:false, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Expansion Card', minQty:0, maxQty:1 }
+    ]
+  },
+  {
+    id: 'ss8',
+    internal: true,
+    code: 'BL3000LIC',
+    serviceType: 'SD-WAN',
+    name: 'Bigleaf Bandwidth License 3000Mbps',
+    amount: 576.95,
+    billingOverride: 'No',
+    required: true, chooseOne: false,
+    quoteReq: false, deliveryReq: false,
+    subPackageIds: [],
+    overrides: {},
+    collapsed: false,
+    parentId: null,
+    items: [
+      { id:'shl',  code:'BL3000LIC', name:'Bigleaf Bandwidth License 3000Mbps', amount:576.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'shr1', code:'BLR112R', name:'Bigleaf 112 Router Rental', amount:13.95, billingOverride:'No', required:true, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:1, maxQty:1 },
+      { id:'ship0', code:'BLIPADR30', name:'Bigleaf 1 Public IP /30', amount:2.95,   billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1, isDefault:true },
+      { id:'ship1', code:'BLIPADR29', name:'Bigleaf 5 Public IP /29',  amount:19.95,  billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'ship2', code:'BLIPADR28', name:'Bigleaf 13 Public IP /28', amount:64.95,  billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'ship3', code:'BLIPADR27', name:'Bigleaf 29 Public IP /27', amount:128.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'ship4', code:'BLIPADR26', name:'Bigleaf 61 Public IP /26', amount:256.95, billingOverride:'No', required:true, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Public IP Block', minQty:1, maxQty:1 },
+      { id:'shs1', code:'BL112SFPR',  name:'Bigleaf SFP+ Optic Module 10G BASE-SR', amount:3.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'shs2', code:'BLSFP1GMR',  name:'SFP Bigleaf 1G MMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'shs3', code:'BLSFP1GSR',  name:'SFP Bigleaf 1G SMF - Rental',           amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'shs4', code:'BLSFP10GSR', name:'SFP Bigleaf 10G SMF - Rental',          amount:1.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'shs5', code:'BLSFP10GMR', name:'SFP Bigleaf 10G MMF - Rental',          amount:0.95,  billingOverride:'No', required:false, chooseOne:false, quoteReq:false, deliveryReq:false, coGroup:'', minQty:0, maxQty:10 },
+      { id:'she1', code:'BLREX1GR',  name:'Bigleaf 4-port Expansion Card (Unit A)', amount:11.95, billingOverride:'No', required:false, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Expansion Card', minQty:0, maxQty:1 },
+      { id:'she2', code:'BLREX10GR', name:'Bigleaf 4-port Expansion Card (Unit B)', amount:11.95, billingOverride:'No', required:false, chooseOne:true, quoteReq:false, deliveryReq:false, coGroup:'Expansion Card', minQty:0, maxQty:1 }
     ]
   }
 ];
@@ -1320,6 +1852,7 @@ function openAddItemModal(pkgId) {
   document.getElementById('fi-amount').value  = 0;
   document.getElementById('fi-billovr').value = 'No';
   document.getElementById('fi-cogroup').value = '';
+  document.getElementById('fi-isdefault').checked = false;
   document.getElementById('fi-minqty').value = 1;
   document.getElementById('fi-maxqty').value = 1;
   document.getElementById('fi-minqty').disabled = false;
@@ -1341,6 +1874,7 @@ function openEditItemModal(pkgId, itemId) {
   document.getElementById('fi-amount').value  = it.amount;
   document.getElementById('fi-billovr').value = it.billingOverride;
   document.getElementById('fi-cogroup').value = it.coGroup || '';
+  document.getElementById('fi-isdefault').checked = it.isDefault || false;
   document.getElementById('fi-minqty').value = it.minQty !== undefined ? it.minQty : 1;
   document.getElementById('fi-maxqty').value = it.maxQty !== undefined ? it.maxQty : 1;
   document.getElementById('fi-minqty').disabled = it.chooseOne || false;
@@ -1363,6 +1897,7 @@ function saveItem() {
     amount:          parseFloat(document.getElementById('fi-amount').value) || 0,
     billingOverride: document.getElementById('fi-billovr').value,
     coGroup:         document.getElementById('fi-cogroup').value.trim(),
+    isDefault:       document.getElementById('fi-isdefault').checked,
     minQty:          parseInt(document.getElementById('fi-minqty').value) || 0,
     maxQty:          parseInt(document.getElementById('fi-maxqty').value) || 1,
     required:    document.getElementById('fi-required').checked,
@@ -1890,7 +2425,11 @@ function renderSubPkgConfigurator(pkgId, p, sel) {
     + (coGroup ? '⊙ Choose One: ' + coGroup : 'Included Components') + '</div>';
 
   if (coGroup) {
-    // Radio-style sub-package chooser
+    // Radio-style sub-package chooser — find default if none selected
+    if (!sel['subpkg_' + coGroup]) {
+      const defSub = p.subPackageIds.find(sid => { const s = getPkg(sid); return s && s.isDefault; });
+      if (defSub) sel['subpkg_' + coGroup] = defSub;
+    }
     const selectedSub = sel['subpkg_' + coGroup] || null;
     html += p.subPackageIds.map(sid => {
       const sub = getPkg(sid);
@@ -1954,9 +2493,12 @@ function renderSubPkgItemsInner(parentPkgId, sub, sel) {
     ).join('');
   }
 
-  // Choose-one groups within sub-package
+  // Pre-select defaults for choose-one groups if not already chosen
   const coGroups = {};
   (sub.items || []).filter(it => it.chooseOne && it.coGroup).forEach(it => {
+    if (it.isDefault && !subSel['co_' + it.coGroup]) {
+      subSel['co_' + it.coGroup] = it.code;
+    }
     if (!coGroups[it.coGroup]) coGroups[it.coGroup] = [];
     coGroups[it.coGroup].push(it);
   });
